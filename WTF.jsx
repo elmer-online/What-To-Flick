@@ -1,0 +1,1818 @@
+import { useState, useEffect, useCallback } from "react";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MINI SVG ICONS — each returns a tiny themed line icon
+   ═══════════════════════════════════════════════════════════════════════════ */
+const IC = {
+  heart: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M12 21C12 21 3 14 3 8.5C3 5.42 5.42 3 8.5 3C10.24 3 11.91 3.81 12 5C12.09 3.81 13.76 3 15.5 3C18.58 3 21 5.42 21 8.5C21 14 12 21 12 21Z"/></svg>,
+  moon: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,
+  sun: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>,
+  star: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  eye: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  key: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>,
+  clock: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  bolt: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+  wave: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M2 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M2 17c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></svg>,
+  mountain: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M2 20L8.5 8 15 20"/><path d="M10 20l4.5-7L22 20"/></svg>,
+  leaf: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M6 21c4-4 8.5-4.5 14-1C17 8 12 3 4 3c0 7 1 13 2 18z"/><path d="M6 21c2-4 4-7 8-9"/></svg>,
+  flame: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M12 22c4.97 0 8-3 8-8 0-4-2.5-7-4-9-.5 2.5-2 4.5-4 5-1-4-3-7-6-9 1 3 0 7-2 9s-2 6 0 8c.5.5 1.5 1 2 1s1-.5 1.5-1c1 2 2.5 3 4.5 4z"/></svg>,
+  skull: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><circle cx="12" cy="10" r="8"/><path d="M8 16v4h2v-2h4v2h2v-4"/><circle cx="9" cy="10" r="1.5" fill={c}/><circle cx="15" cy="10" r="1.5" fill={c}/></svg>,
+  compass: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>,
+  crown: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M2 20h20L19 8l-4 5-3-7-3 7-4-5z"/></svg>,
+  diamond: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M6 3h12l4 7-10 11L2 10z"/><line x1="2" y1="10" x2="22" y2="10"/></svg>,
+  door: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><rect x="5" y="2" width="14" height="20" rx="1"/><circle cx="15" cy="12" r="1" fill={c}/></svg>,
+  globe: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+  mask: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M4 8c0-2 2-4 8-4s8 2 8 4-2 8-8 10S4 10 4 8z"/><circle cx="9" cy="9" r="1.5"/><circle cx="15" cy="9" r="1.5"/></svg>,
+  spiral: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M12 12m-2 0a2 2 0 1 0 4 0m-6 0a4 4 0 1 0 8 0m-10 0a6 6 0 1 0 12 0m-14 0a8 8 0 1 0 16 0"/></svg>,
+  dagger: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><line x1="12" y1="2" x2="12" y2="18"/><line x1="8" y1="6" x2="16" y2="6"/><path d="M10 18l2 4 2-4"/></svg>,
+  feather: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/></svg>,
+  drop: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>,
+  grid: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>,
+  link: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>,
+  target: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+  shield: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  anchor: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="21"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>,
+  radio: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49"/></svg>,
+  scissors: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>,
+  hourglass: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M5 3h14M5 21h14M7 3v3a5 5 0 0 0 5 5 5 5 0 0 0 5-5V3M7 21v-3a5 5 0 0 1 5-5 5 5 0 0 1 5 5v3"/></svg>,
+  camera: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
+  pen: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>,
+  wind: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>,
+  coffee: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>,
+  music: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
+  book: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+  tree: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M12 22v-7"/><path d="M7 15l5-11 5 11H7z"/></svg>,
+  plane: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>,
+  box: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>,
+  hex: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M12 2l9 5v10l-9 5-9-5V7z"/></svg>,
+  cross: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  infinity: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z"/></svg>,
+  prism: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><polygon points="12 2 22 20 2 20"/></svg>,
+  sparkle: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>,
+  film: (c) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="8" x2="22" y2="8"/><line x1="2" y1="16" x2="22" y2="16"/><line x1="6" y1="4" x2="6" y2="8"/><line x1="18" y1="4" x2="18" y2="8"/></svg>,
+};
+
+function MiniIcon({ name, color = "#666" }) {
+  const fn = IC[name];
+  return fn ? fn(color) : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5"><circle cx="12" cy="12" r="4"/></svg>;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOODS
+   ═══════════════════════════════════════════════════════════════════════════ */
+const MOODS = [
+  { id: "romantic", label: "Romantic", icon: "♥", color: "#E8637A" },
+  { id: "fun", label: "Fun", icon: "☺", color: "#F5A623" },
+  { id: "dramatic", label: "Dramatic", icon: "◆", color: "#8B6914" },
+  { id: "scary", label: "Scary", icon: "☾", color: "#4A2D5E" },
+  { id: "nuts", label: "Nuts", icon: "⚡", color: "#D63031" },
+  { id: "chill", label: "Chill", icon: "◎", color: "#55A38B" },
+  { id: "action", label: "Action", icon: "▶", color: "#E07020" },
+  { id: "mind-bending", label: "Mind-bending", icon: "∞", color: "#2D6CA2" },
+  { id: "tearjerker", label: "Tearjerker", icon: "◇", color: "#7B8FA1" },
+  { id: "nostalgic", label: "Nostalgic", icon: "↻", color: "#B07D4B" },
+];
+
+const MOOD_MAP = {};
+MOODS.forEach(m => { MOOD_MAP[m.id] = m; });
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOVIE DATABASE (260 titles)
+   ═══════════════════════════════════════════════════════════════════════════ */
+const DB = [
+  // ── ROMANTIC ──
+  { id:1, title:"Before Sunrise", year:1995, type:"movie", moods:["romantic","chill"], tags:["dialogue","travel","philosophy","indie"], icon:"sun" },
+  { id:2, title:"Pride & Prejudice", year:2005, type:"movie", moods:["romantic","dramatic"], tags:["period","british","literary","beautiful"], icon:"book" },
+  { id:3, title:"Amélie", year:2001, type:"movie", moods:["romantic","fun","chill"], tags:["french","whimsical","quirky","visual"], icon:"sparkle" },
+  { id:4, title:"Normal People", year:2020, type:"series", moods:["romantic","dramatic","tearjerker"], tags:["irish","intimate","young-love","literary"], icon:"link" },
+  { id:5, title:"Eternal Sunshine of the Spotless Mind", year:2004, type:"movie", moods:["romantic","mind-bending","dramatic"], tags:["sci-fi","memory","indie","heartbreak"], icon:"spiral" },
+  { id:6, title:"In the Mood for Love", year:2000, type:"movie", moods:["romantic","dramatic","chill"], tags:["hong-kong","wong-kar-wai","slow-burn","atmospheric","gorgeous"], icon:"clock" },
+  { id:7, title:"Fleabag", year:2016, type:"series", moods:["romantic","fun","dramatic"], tags:["british","dark-comedy","breaking-fourth-wall","sharp"], icon:"mask" },
+  { id:8, title:"Call Me by Your Name", year:2017, type:"movie", moods:["romantic","chill","tearjerker"], tags:["summer","italy","coming-of-age","beautiful"], icon:"sun" },
+  { id:9, title:"Chungking Express", year:1994, type:"movie", moods:["romantic","chill","nuts"], tags:["hong-kong","wong-kar-wai","neon","dreamy","offbeat"], icon:"radio" },
+  { id:10, title:"The Handmaiden", year:2016, type:"movie", moods:["romantic","dramatic","mind-bending"], tags:["korean","park-chan-wook","erotic","twists","gorgeous"], icon:"key" },
+  { id:11, title:"Phantom Thread", year:2017, type:"movie", moods:["romantic","dramatic"], tags:["fashion","obsessive","pta","beautiful","toxic"], icon:"scissors" },
+  { id:12, title:"Portrait of a Lady on Fire", year:2019, type:"movie", moods:["romantic","dramatic","chill"], tags:["french","period","gaze","painterly","slow-burn"], icon:"flame" },
+  { id:13, title:"Crazy Rich Asians", year:2018, type:"movie", moods:["romantic","fun"], tags:["glamorous","family","comedy","cultural"], icon:"diamond" },
+  { id:14, title:"10 Things I Hate About You", year:1999, type:"movie", moods:["romantic","fun","nostalgic"], tags:["teen","comedy","90s","literary"], icon:"feather" },
+  { id:15, title:"Punch-Drunk Love", year:2002, type:"movie", moods:["romantic","nuts"], tags:["pta","anxiety","unconventional","offbeat"], icon:"bolt" },
+  { id:16, title:"Harold and Maude", year:1971, type:"movie", moods:["romantic","fun","nuts"], tags:["cult","dark-comedy","counterculture","life-affirming"], icon:"leaf" },
+  { id:17, title:"Carol", year:2015, type:"movie", moods:["romantic","dramatic"], tags:["period","forbidden","todd-haynes","atmospheric","beautiful"], icon:"eye" },
+  { id:18, title:"Wristcutters: A Love Story", year:2006, type:"movie", moods:["romantic","fun","nuts"], tags:["afterlife","indie","dark-comedy","quirky","cult"], icon:"compass" },
+  { id:19, title:"Crazy, Stupid, Love", year:2011, type:"movie", moods:["romantic","fun"], tags:["ensemble","comedy","twist","charming"], icon:"heart" },
+  { id:20, title:"Lovers Rock", year:2020, type:"movie", moods:["romantic","chill"], tags:["british","steve-mcqueen","music","short","sensual"], icon:"music" },
+  { id:21, title:"Happy Together", year:1997, type:"movie", moods:["romantic","dramatic","tearjerker"], tags:["wong-kar-wai","buenos-aires","toxic","gorgeous","queer"], icon:"wave" },
+  { id:22, title:"Bridget Jones's Diary", year:2001, type:"movie", moods:["romantic","fun"], tags:["british","comedy","literary","charming"], icon:"pen" },
+  { id:23, title:"Moonrise Kingdom", year:2012, type:"movie", moods:["romantic","fun","chill"], tags:["wes-anderson","quirky","young-love","whimsical"], icon:"compass" },
+  { id:24, title:"When Harry Met Sally", year:1989, type:"movie", moods:["romantic","fun","nostalgic"], tags:["classic","friendship","new-york","witty"], icon:"coffee" },
+  // ── FUN / COMEDY ──
+  { id:25, title:"The Grand Budapest Hotel", year:2014, type:"movie", moods:["fun","nuts"], tags:["wes-anderson","visual","quirky","ensemble"], icon:"door" },
+  { id:26, title:"Knives Out", year:2019, type:"movie", moods:["fun","mind-bending"], tags:["mystery","ensemble","witty","twist"], icon:"dagger" },
+  { id:27, title:"What We Do in the Shadows", year:2019, type:"series", moods:["fun","scary","nuts"], tags:["mockumentary","vampire","absurd","ensemble"], icon:"moon" },
+  { id:28, title:"The Nice Guys", year:2016, type:"movie", moods:["fun","action"], tags:["buddy","70s","noir","witty","underrated"], icon:"shield" },
+  { id:29, title:"Schitt's Creek", year:2015, type:"series", moods:["fun","chill","romantic"], tags:["wholesome","family","comedy","heartwarming"], icon:"heart" },
+  { id:30, title:"Ted Lasso", year:2020, type:"series", moods:["fun","chill","tearjerker"], tags:["wholesome","sports","optimistic","british"], icon:"shield" },
+  { id:31, title:"Hunt for the Wilderpeople", year:2016, type:"movie", moods:["fun","chill"], tags:["new-zealand","taika-waititi","heartwarming","adventure","offbeat"], icon:"tree" },
+  { id:32, title:"The Death of Stalin", year:2017, type:"movie", moods:["fun","dramatic","nuts"], tags:["political-satire","dark-comedy","british","absurd","historical"], icon:"crown" },
+  { id:33, title:"Barb and Star Go to Vista Del Mar", year:2021, type:"movie", moods:["fun","nuts"], tags:["absurd","musical","underrated","silly","cult"], icon:"wave" },
+  { id:34, title:"The Lobster", year:2015, type:"movie", moods:["fun","nuts","mind-bending"], tags:["yorgos-lanthimos","dystopia","dark-comedy","absurd","deadpan"], icon:"target" },
+  { id:35, title:"Game Night", year:2018, type:"movie", moods:["fun","action"], tags:["clever","couple","twist","fast-paced"], icon:"grid" },
+  { id:36, title:"Popstar: Never Stop Never Stopping", year:2016, type:"movie", moods:["fun","nuts"], tags:["mockumentary","lonely-island","underrated","music","absurd"], icon:"music" },
+  { id:37, title:"Palm Springs", year:2020, type:"movie", moods:["fun","romantic","mind-bending"], tags:["time-loop","existential","charming","indie"], icon:"infinity" },
+  { id:38, title:"Derry Girls", year:2018, type:"series", moods:["fun","nostalgic"], tags:["irish","teen","90s","political-backdrop","hilarious"], icon:"sparkle" },
+  { id:39, title:"The Other Guys", year:2010, type:"movie", moods:["fun","action","nuts"], tags:["buddy-cop","will-ferrell","underrated","absurd"], icon:"shield" },
+  { id:40, title:"Bottoms", year:2023, type:"movie", moods:["fun","nuts"], tags:["teen","queer","absurd","fight-club","sharp"], icon:"bolt" },
+  { id:41, title:"Reservation Dogs", year:2021, type:"series", moods:["fun","dramatic","chill"], tags:["indigenous","coming-of-age","unique-voice","heartwarming"], icon:"feather" },
+  { id:42, title:"Superbad", year:2007, type:"movie", moods:["fun","nostalgic"], tags:["teen","raunchy","friendship","2000s"], icon:"star" },
+  { id:43, title:"Brooklyn Nine-Nine", year:2013, type:"series", moods:["fun","chill"], tags:["workplace","ensemble","wholesome","sitcom"], icon:"shield" },
+  { id:44, title:"Wet Hot American Summer", year:2001, type:"movie", moods:["fun","nuts","nostalgic"], tags:["cult","absurd","parody","ensemble","summer-camp"], icon:"sun" },
+  { id:45, title:"Tucker and Dale vs Evil", year:2010, type:"movie", moods:["fun","scary","nuts"], tags:["horror-comedy","cult","subversive","hilarious"], icon:"skull" },
+  { id:46, title:"The Good Place", year:2016, type:"series", moods:["fun","chill","mind-bending"], tags:["philosophy","afterlife","wholesome","clever"], icon:"sparkle" },
+  { id:47, title:"Tampopo", year:1985, type:"movie", moods:["fun","chill","nostalgic"], tags:["japanese","food","western-parody","charming","cult"], icon:"coffee" },
+  // ── DRAMATIC ──
+  { id:48, title:"The Shawshank Redemption", year:1994, type:"movie", moods:["dramatic","tearjerker"], tags:["prison","hope","friendship","classic"], icon:"key" },
+  { id:49, title:"Breaking Bad", year:2008, type:"series", moods:["dramatic","action","mind-bending"], tags:["crime","transformation","tension","masterpiece"], icon:"hex" },
+  { id:50, title:"Parasite", year:2019, type:"movie", moods:["dramatic","mind-bending","nuts"], tags:["korean","class","thriller","twist","bong-joon-ho"], icon:"mountain" },
+  { id:51, title:"Succession", year:2018, type:"series", moods:["dramatic","fun"], tags:["family","power","wealth","sharp-dialogue"], icon:"crown" },
+  { id:52, title:"There Will Be Blood", year:2007, type:"movie", moods:["dramatic"], tags:["epic","ambition","dark","powerhouse-acting","pta"], icon:"flame" },
+  { id:53, title:"The Bear", year:2022, type:"series", moods:["dramatic","action"], tags:["cooking","intense","family","anxiety-inducing"], icon:"flame" },
+  { id:54, title:"Moonlight", year:2016, type:"movie", moods:["dramatic","tearjerker","romantic"], tags:["identity","poetic","coming-of-age","beautiful"], icon:"moon" },
+  { id:55, title:"Chernobyl", year:2019, type:"series", moods:["dramatic","scary"], tags:["historical","disaster","intense","haunting"], icon:"bolt" },
+  { id:56, title:"12 Angry Men", year:1957, type:"movie", moods:["dramatic","mind-bending"], tags:["courtroom","dialogue","classic","tension"], icon:"grid" },
+  { id:57, title:"Burning", year:2018, type:"movie", moods:["dramatic","mind-bending","scary"], tags:["korean","slow-burn","lee-chang-dong","ambiguous","literary"], icon:"flame" },
+  { id:58, title:"The White Lotus", year:2021, type:"series", moods:["dramatic","fun","mind-bending"], tags:["satire","class","vacation","ensemble","dark-comedy"], icon:"sun" },
+  { id:59, title:"Aftersun", year:2022, type:"movie", moods:["dramatic","tearjerker","chill"], tags:["memory","father-daughter","subtle","devastating","debut"], icon:"sun" },
+  { id:60, title:"Minari", year:2020, type:"movie", moods:["dramatic","chill","tearjerker"], tags:["korean-american","family","immigrant","gentle","a24"], icon:"leaf" },
+  { id:61, title:"The Sopranos", year:1999, type:"series", moods:["dramatic","fun"], tags:["mafia","therapy","groundbreaking","complex-characters","hbo"], icon:"crown" },
+  { id:62, title:"Shoplifters", year:2018, type:"movie", moods:["dramatic","tearjerker","chill"], tags:["japanese","kore-eda","family","poverty","gentle"], icon:"heart" },
+  { id:63, title:"A Separation", year:2011, type:"movie", moods:["dramatic"], tags:["iranian","moral-dilemma","farhadi","tense","human"], icon:"prism" },
+  { id:64, title:"Better Call Saul", year:2015, type:"series", moods:["dramatic","fun"], tags:["crime","slow-burn","prequel","character-study","masterful"], icon:"pen" },
+  { id:65, title:"First Reformed", year:2017, type:"movie", moods:["dramatic","mind-bending"], tags:["existential","environmental","paul-schrader","brooding","spiritual"], icon:"cross" },
+  { id:66, title:"Amores Perros", year:2000, type:"movie", moods:["dramatic","nuts","action"], tags:["mexican","iñárritu","interconnected","raw","debut"], icon:"bolt" },
+  { id:67, title:"Mare of Easttown", year:2021, type:"series", moods:["dramatic","scary"], tags:["mystery","small-town","kate-winslet","gritty","nuanced"], icon:"eye" },
+  { id:68, title:"The Florida Project", year:2017, type:"movie", moods:["dramatic","chill","tearjerker"], tags:["childhood","poverty","sean-baker","colorful","devastating"], icon:"sun" },
+  { id:69, title:"Pose", year:2018, type:"series", moods:["dramatic","fun","tearjerker"], tags:["ballroom","trans","80s-90s","community","groundbreaking"], icon:"star" },
+  { id:70, title:"Power of the Dog", year:2021, type:"movie", moods:["dramatic","mind-bending"], tags:["western","slow-burn","jane-campion","tension","toxic-masculinity"], icon:"mountain" },
+  { id:71, title:"Pachinko", year:2022, type:"series", moods:["dramatic","tearjerker"], tags:["korean","generational","epic","beautiful","immigrant"], icon:"hourglass" },
+  { id:72, title:"The Leftovers", year:2014, type:"series", moods:["dramatic","mind-bending","tearjerker"], tags:["existential","grief","mysterious","hbo","transcendent"], icon:"spiral" },
+  // ── SCARY / HORROR ──
+  { id:73, title:"Hereditary", year:2018, type:"movie", moods:["scary","dramatic"], tags:["psychological","family","disturbing","slow-burn","a24"], icon:"skull" },
+  { id:74, title:"The Haunting of Hill House", year:2018, type:"series", moods:["scary","dramatic","tearjerker"], tags:["family","ghosts","emotional","gothic"], icon:"door" },
+  { id:75, title:"Get Out", year:2017, type:"movie", moods:["scary","mind-bending"], tags:["social-commentary","thriller","twist","smart"], icon:"eye" },
+  { id:76, title:"Midsommar", year:2019, type:"movie", moods:["scary","nuts","mind-bending"], tags:["folk-horror","daylight","disturbing","beautiful","a24"], icon:"sun" },
+  { id:77, title:"The Shining", year:1980, type:"movie", moods:["scary","nuts","nostalgic"], tags:["kubrick","isolation","psychological","iconic"], icon:"key" },
+  { id:78, title:"The Silence of the Lambs", year:1991, type:"movie", moods:["scary","dramatic","mind-bending"], tags:["serial-killer","psychological","classic","tension"], icon:"mask" },
+  { id:79, title:"Midnight Mass", year:2021, type:"series", moods:["scary","dramatic"], tags:["religious","slow-burn","philosophical","haunting"], icon:"cross" },
+  { id:80, title:"The Witch", year:2015, type:"movie", moods:["scary","dramatic"], tags:["period","folk-horror","a24","slow-burn","dread"], icon:"tree" },
+  { id:81, title:"Alien", year:1979, type:"movie", moods:["scary","action","nostalgic"], tags:["sci-fi","space","survival","iconic"], icon:"eye" },
+  { id:82, title:"It Follows", year:2014, type:"movie", moods:["scary","mind-bending"], tags:["indie","concept","dread","stylish","cult"], icon:"eye" },
+  { id:83, title:"The Babadook", year:2014, type:"movie", moods:["scary","dramatic"], tags:["grief","motherhood","psychological","australian","cult"], icon:"book" },
+  { id:84, title:"Suspiria", year:1977, type:"movie", moods:["scary","nuts","nostalgic"], tags:["italian","argento","giallo","psychedelic","cult","visual"], icon:"spiral" },
+  { id:85, title:"The Wailing", year:2016, type:"movie", moods:["scary","dramatic","mind-bending"], tags:["korean","supernatural","village","long","disturbing"], icon:"mountain" },
+  { id:86, title:"Marianne", year:2019, type:"series", moods:["scary"], tags:["french","witch","genuinely-scary","underrated","intense"], icon:"skull" },
+  { id:87, title:"A Quiet Place", year:2018, type:"movie", moods:["scary","dramatic"], tags:["survival","family","tension","minimal-dialogue"], icon:"radio" },
+  { id:88, title:"The Exorcist", year:1973, type:"movie", moods:["scary","nostalgic"], tags:["possession","classic","religious","disturbing"], icon:"cross" },
+  { id:89, title:"Mandy", year:2018, type:"movie", moods:["scary","nuts","action"], tags:["psychedelic","revenge","nicolas-cage","cult","visual"], icon:"flame" },
+  { id:90, title:"Under the Skin", year:2013, type:"movie", moods:["scary","mind-bending"], tags:["sci-fi","atmospheric","arthouse","unsettling"], icon:"eye" },
+  { id:91, title:"His House", year:2020, type:"movie", moods:["scary","dramatic"], tags:["refugee","british","social-commentary","haunting","underrated"], icon:"door" },
+  { id:92, title:"Tumbbad", year:2018, type:"movie", moods:["scary","dramatic","nuts"], tags:["indian","folk-horror","greed","visually-stunning","cult"], icon:"diamond" },
+  { id:93, title:"Ringu", year:1998, type:"movie", moods:["scary","mind-bending","nostalgic"], tags:["japanese","cursed-tape","slow-burn","original","influential"], icon:"spiral" },
+  { id:94, title:"The Thing", year:1982, type:"movie", moods:["scary","nuts","nostalgic"], tags:["carpenter","practical-effects","isolation","paranoia","cult"], icon:"skull" },
+  // ── NUTS / WILD ──
+  { id:95, title:"Everything Everywhere All at Once", year:2022, type:"movie", moods:["nuts","fun","tearjerker","action"], tags:["multiverse","family","absurd","emotional","a24"], icon:"infinity" },
+  { id:96, title:"Mad Max: Fury Road", year:2015, type:"movie", moods:["nuts","action"], tags:["post-apocalyptic","chase","visual","relentless"], icon:"flame" },
+  { id:97, title:"Fight Club", year:1999, type:"movie", moods:["nuts","mind-bending","dramatic"], tags:["twist","anti-consumerism","dark","cult","fincher"], icon:"bolt" },
+  { id:98, title:"The Wolf of Wall Street", year:2013, type:"movie", moods:["nuts","fun","dramatic"], tags:["excess","true-story","scorsese","wild-ride"], icon:"diamond" },
+  { id:99, title:"Uncut Gems", year:2019, type:"movie", moods:["nuts","dramatic"], tags:["anxiety-inducing","gambling","intense","non-stop","a24"], icon:"diamond" },
+  { id:100, title:"Squid Game", year:2021, type:"series", moods:["nuts","dramatic","scary"], tags:["korean","survival","social-commentary","violent"], icon:"grid" },
+  { id:101, title:"The Raid", year:2011, type:"movie", moods:["nuts","action"], tags:["martial-arts","indonesian","relentless","visceral"], icon:"bolt" },
+  { id:102, title:"Sorry to Bother You", year:2018, type:"movie", moods:["nuts","fun","mind-bending"], tags:["surreal","satire","wild-twist","social-commentary"], icon:"radio" },
+  { id:103, title:"Atlanta", year:2016, type:"series", moods:["nuts","fun","mind-bending"], tags:["surreal","music-industry","social-commentary","unpredictable"], icon:"music" },
+  { id:104, title:"Climax", year:2018, type:"movie", moods:["nuts","scary"], tags:["gaspar-noé","dance","one-take","descent","disturbing"], icon:"spiral" },
+  { id:105, title:"Swiss Army Man", year:2016, type:"movie", moods:["nuts","fun","tearjerker"], tags:["absurd","a24","surprisingly-moving","indie"], icon:"compass" },
+  { id:106, title:"Possessor", year:2020, type:"movie", moods:["nuts","scary","mind-bending"], tags:["body-horror","cronenberg-son","sci-fi","violent","identity"], icon:"spiral" },
+  { id:107, title:"Baby Driver", year:2017, type:"movie", moods:["nuts","action","fun"], tags:["music","heist","stylish","fast-paced","edgar-wright"], icon:"music" },
+  { id:108, title:"Dogtooth", year:2009, type:"movie", moods:["nuts","mind-bending","scary"], tags:["greek","yorgos-lanthimos","disturbing","cult","family"], icon:"door" },
+  { id:109, title:"Birdman", year:2014, type:"movie", moods:["nuts","dramatic","fun"], tags:["one-take","meta","iñárritu","theatre","ego"], icon:"feather" },
+  { id:110, title:"The Lighthouse", year:2019, type:"movie", moods:["nuts","scary","dramatic"], tags:["a24","isolation","madness","black-and-white"], icon:"eye" },
+  { id:111, title:"Beef", year:2023, type:"series", moods:["nuts","dramatic","fun"], tags:["road-rage","spiral","dark-comedy","asian-american","a24"], icon:"flame" },
+  { id:112, title:"Titane", year:2021, type:"movie", moods:["nuts","scary"], tags:["body-horror","french","palme-dor","provocative","identity"], icon:"bolt" },
+  { id:113, title:"Good Time", year:2017, type:"movie", moods:["nuts","dramatic","action"], tags:["safdie-brothers","night","neon","anxiety-inducing"], icon:"bolt" },
+  { id:114, title:"Monty Python and the Holy Grail", year:1975, type:"movie", moods:["nuts","fun","nostalgic"], tags:["british","absurd","quotable","cult","classic-comedy"], icon:"crown" },
+  { id:115, title:"House", year:1977, type:"movie", moods:["nuts","scary","fun"], tags:["japanese","psychedelic","surreal","haunted-house","cult"], icon:"door" },
+  { id:116, title:"Holy Motors", year:2012, type:"movie", moods:["nuts","mind-bending","fun"], tags:["french","surreal","denis-lavant","leos-carax","indefinable"], icon:"mask" },
+  // ── CHILL / FEEL-GOOD ──
+  { id:117, title:"Chef", year:2014, type:"movie", moods:["chill","fun"], tags:["food","road-trip","family","feel-good"], icon:"flame" },
+  { id:118, title:"Spirited Away", year:2001, type:"movie", moods:["chill","mind-bending","nostalgic"], tags:["anime","ghibli","magical","coming-of-age"], icon:"wind" },
+  { id:119, title:"The Secret Life of Walter Mitty", year:2013, type:"movie", moods:["chill","fun"], tags:["adventure","visual","inspirational","travel"], icon:"mountain" },
+  { id:120, title:"Paddington 2", year:2017, type:"movie", moods:["chill","fun"], tags:["wholesome","british","family","charming","perfect"], icon:"heart" },
+  { id:121, title:"Lost in Translation", year:2003, type:"movie", moods:["chill","romantic","dramatic"], tags:["tokyo","loneliness","quiet","atmospheric","sofia-coppola"], icon:"moon" },
+  { id:122, title:"My Neighbor Totoro", year:1988, type:"movie", moods:["chill","nostalgic"], tags:["anime","ghibli","childhood","magical","gentle"], icon:"leaf" },
+  { id:123, title:"Midnight in Paris", year:2011, type:"movie", moods:["chill","romantic","nostalgic"], tags:["paris","time-travel","literary","whimsical"], icon:"clock" },
+  { id:124, title:"Columbus", year:2017, type:"movie", moods:["chill","dramatic"], tags:["architecture","slow","beautiful-frames","indie","quiet"], icon:"grid" },
+  { id:125, title:"Kiki's Delivery Service", year:1989, type:"movie", moods:["chill","nostalgic","fun"], tags:["anime","ghibli","witch","coming-of-age","cozy"], icon:"wind" },
+  { id:126, title:"The Darjeeling Limited", year:2007, type:"movie", moods:["chill","fun","dramatic"], tags:["wes-anderson","india","brothers","travel","quirky"], icon:"compass" },
+  { id:127, title:"Paterson", year:2016, type:"movie", moods:["chill","dramatic"], tags:["jim-jarmusch","poetry","routine","quiet","bus-driver"], icon:"pen" },
+  { id:128, title:"Somebody Feed Phil", year:2018, type:"series", moods:["chill","fun"], tags:["food","travel","wholesome","documentary"], icon:"globe" },
+  { id:129, title:"Julie & Julia", year:2009, type:"movie", moods:["chill","romantic","fun"], tags:["cooking","true-story","charming","paris"], icon:"coffee" },
+  { id:130, title:"Peanut Butter Falcon", year:2019, type:"movie", moods:["chill","fun","tearjerker"], tags:["road-trip","friendship","heartwarming","indie"], icon:"wave" },
+  { id:131, title:"Our Planet", year:2019, type:"series", moods:["chill"], tags:["nature","documentary","beautiful","narrated"], icon:"globe" },
+  { id:132, title:"The Wind Rises", year:2013, type:"movie", moods:["chill","dramatic","tearjerker"], tags:["anime","ghibli","aviation","beautiful","bittersweet"], icon:"wind" },
+  { id:133, title:"Waking Life", year:2001, type:"movie", moods:["chill","mind-bending"], tags:["rotoscope","linklater","philosophy","dream","experimental"], icon:"spiral" },
+  { id:134, title:"About Time", year:2013, type:"movie", moods:["chill","romantic","tearjerker"], tags:["time-travel","british","family","life-affirming","charming"], icon:"clock" },
+  { id:135, title:"Song of the Sea", year:2014, type:"movie", moods:["chill","tearjerker","nostalgic"], tags:["animation","irish","folklore","beautiful","gentle"], icon:"wave" },
+  // ── ACTION / THRILLING ──
+  { id:136, title:"The Dark Knight", year:2008, type:"movie", moods:["action","dramatic"], tags:["superhero","villain","epic","dark","nolan"], icon:"mask" },
+  { id:137, title:"John Wick", year:2014, type:"movie", moods:["action","nuts"], tags:["revenge","stylish","choreography","dog"], icon:"target" },
+  { id:138, title:"Money Heist", year:2017, type:"series", moods:["action","dramatic","nuts"], tags:["heist","spanish","ensemble","twists"], icon:"mask" },
+  { id:139, title:"Sicario", year:2015, type:"movie", moods:["action","dramatic","scary"], tags:["cartel","tension","dark","thriller","villeneuve"], icon:"dagger" },
+  { id:140, title:"Dune", year:2021, type:"movie", moods:["action","dramatic","mind-bending"], tags:["sci-fi","epic","visual","world-building","villeneuve"], icon:"mountain" },
+  { id:141, title:"Peaky Blinders", year:2013, type:"series", moods:["action","dramatic"], tags:["british","gangster","period","stylish"], icon:"flame" },
+  { id:142, title:"The Raid 2", year:2014, type:"movie", moods:["action","nuts"], tags:["martial-arts","indonesian","sequel","epic-scale","brutal"], icon:"bolt" },
+  { id:143, title:"Gladiator", year:2000, type:"movie", moods:["action","dramatic","nostalgic"], tags:["roman","revenge","epic","iconic"], icon:"shield" },
+  { id:144, title:"Dredd", year:2012, type:"movie", moods:["action","nuts","scary"], tags:["sci-fi","contained","brutal","underrated","cult"], icon:"shield" },
+  { id:145, title:"Oldboy", year:2003, type:"movie", moods:["action","nuts","mind-bending"], tags:["korean","revenge","park-chan-wook","twist","visceral"], icon:"dagger" },
+  { id:146, title:"Top Gun: Maverick", year:2022, type:"movie", moods:["action","nostalgic","dramatic"], tags:["aviation","sequel","spectacular","emotional"], icon:"plane" },
+  { id:147, title:"Gangs of Wasseypur", year:2012, type:"movie", moods:["action","dramatic","nuts"], tags:["indian","gangster","epic","generational","cult"], icon:"flame" },
+  { id:148, title:"Warrior", year:2019, type:"series", moods:["action","dramatic","fun"], tags:["martial-arts","period","bruce-lee","underrated","chinatown"], icon:"bolt" },
+  { id:149, title:"RRR", year:2022, type:"movie", moods:["action","nuts","fun"], tags:["indian","historical","bromance","over-the-top","spectacular"], icon:"flame" },
+  { id:150, title:"Shogun", year:2024, type:"series", moods:["action","dramatic"], tags:["japanese","historical","political","epic","stunning"], icon:"dagger" },
+  { id:151, title:"Casino Royale", year:2006, type:"movie", moods:["action","dramatic"], tags:["bond","poker","stylish","reinvention"], icon:"diamond" },
+  { id:152, title:"Incendies", year:2010, type:"movie", moods:["dramatic","action","mind-bending"], tags:["villeneuve","war","twist","devastating","lebanese"], icon:"flame" },
+  { id:153, title:"I Saw the Devil", year:2010, type:"movie", moods:["action","scary","nuts"], tags:["korean","revenge","cat-and-mouse","violent","relentless"], icon:"eye" },
+  { id:154, title:"13 Assassins", year:2010, type:"movie", moods:["action","dramatic"], tags:["samurai","japanese","takashi-miike","epic-battle","masterful"], icon:"dagger" },
+  { id:155, title:"Killing Eve", year:2018, type:"series", moods:["action","fun","nuts"], tags:["spy","cat-and-mouse","obsession","stylish","british"], icon:"dagger" },
+  // ── MIND-BENDING ──
+  { id:156, title:"Inception", year:2010, type:"movie", moods:["mind-bending","action"], tags:["dreams","nolan","layers","heist"], icon:"spiral" },
+  { id:157, title:"Black Mirror", year:2011, type:"series", moods:["mind-bending","scary","dramatic"], tags:["technology","dystopia","anthology","thought-provoking"], icon:"grid" },
+  { id:158, title:"The Matrix", year:1999, type:"movie", moods:["mind-bending","action","nostalgic"], tags:["simulation","sci-fi","revolutionary","philosophy"], icon:"eye" },
+  { id:159, title:"Dark", year:2017, type:"series", moods:["mind-bending","scary","dramatic"], tags:["german","time-travel","complex","mystery"], icon:"clock" },
+  { id:160, title:"Arrival", year:2016, type:"movie", moods:["mind-bending","dramatic","tearjerker"], tags:["aliens","language","time","emotional","villeneuve"], icon:"radio" },
+  { id:161, title:"Severance", year:2022, type:"series", moods:["mind-bending","dramatic","scary"], tags:["workplace","dystopia","mystery","unsettling"], icon:"door" },
+  { id:162, title:"Interstellar", year:2014, type:"movie", moods:["mind-bending","dramatic","tearjerker"], tags:["space","time","nolan","emotional"], icon:"infinity" },
+  { id:163, title:"The Prestige", year:2006, type:"movie", moods:["mind-bending","dramatic"], tags:["magic","rivalry","twist","nolan"], icon:"mask" },
+  { id:164, title:"Mr. Robot", year:2015, type:"series", moods:["mind-bending","dramatic","nuts"], tags:["hacking","unreliable-narrator","anti-hero","smart"], icon:"grid" },
+  { id:165, title:"Mulholland Drive", year:2001, type:"movie", moods:["mind-bending","scary","dramatic"], tags:["lynch","hollywood","dream-logic","mystery","cult"], icon:"spiral" },
+  { id:166, title:"Coherence", year:2013, type:"movie", moods:["mind-bending","scary"], tags:["low-budget","parallel-universes","dinner-party","indie","clever"], icon:"prism" },
+  { id:167, title:"Annihilation", year:2018, type:"movie", moods:["mind-bending","scary","action"], tags:["sci-fi","nature","body-horror","beautiful","existential"], icon:"spiral" },
+  { id:168, title:"Primer", year:2004, type:"movie", moods:["mind-bending"], tags:["time-travel","ultra-low-budget","complex","indie","cult","puzzle"], icon:"clock" },
+  { id:169, title:"Predestination", year:2014, type:"movie", moods:["mind-bending","dramatic"], tags:["time-travel","identity","twist","underrated","tight"], icon:"infinity" },
+  { id:170, title:"Shutter Island", year:2010, type:"movie", moods:["mind-bending","scary"], tags:["twist","psychological","asylum","noir","scorsese"], icon:"eye" },
+  { id:171, title:"Enemy", year:2013, type:"movie", moods:["mind-bending","scary"], tags:["doppelganger","villeneuve","surreal","unsettling"], icon:"eye" },
+  { id:172, title:"The Truman Show", year:1998, type:"movie", moods:["mind-bending","dramatic","fun"], tags:["reality-tv","existential","jim-carrey","prophetic"], icon:"camera" },
+  { id:173, title:"Donnie Darko", year:2001, type:"movie", moods:["mind-bending","scary","nostalgic"], tags:["teen","time-travel","cult","80s-setting","rabbit"], icon:"clock" },
+  { id:174, title:"Stalker", year:1979, type:"movie", moods:["mind-bending","chill"], tags:["tarkovsky","russian","philosophical","zone","arthouse"], icon:"compass" },
+  { id:175, title:"Paprika", year:2006, type:"movie", moods:["mind-bending","nuts","fun"], tags:["anime","dreams","satoshi-kon","inspired-inception","colorful"], icon:"spiral" },
+  { id:176, title:"Synecdoche, New York", year:2008, type:"movie", moods:["mind-bending","dramatic","tearjerker"], tags:["charlie-kaufman","meta","existential","ambitious","devastating"], icon:"box" },
+  { id:177, title:"Devs", year:2020, type:"series", moods:["mind-bending","dramatic"], tags:["tech","determinism","alex-garland","beautiful","philosophical"], icon:"hex" },
+  { id:178, title:"Perfect Blue", year:1997, type:"movie", moods:["mind-bending","scary","nuts"], tags:["anime","satoshi-kon","identity","thriller","influential"], icon:"mask" },
+  { id:179, title:"Triangle", year:2009, type:"movie", moods:["mind-bending","scary"], tags:["time-loop","ship","underrated","puzzle","australian"], icon:"prism" },
+  { id:180, title:"Memoria", year:2021, type:"movie", moods:["mind-bending","chill"], tags:["thai","apichatpong","slow-cinema","sound","meditative"], icon:"radio" },
+  // ── TEARJERKER ──
+  { id:181, title:"Schindler's List", year:1993, type:"movie", moods:["tearjerker","dramatic"], tags:["wwii","historical","spielberg","devastating"], icon:"feather" },
+  { id:182, title:"Grave of the Fireflies", year:1988, type:"movie", moods:["tearjerker","dramatic","nostalgic"], tags:["anime","war","siblings","devastating","ghibli"], icon:"flame" },
+  { id:183, title:"Coco", year:2017, type:"movie", moods:["tearjerker","fun","chill"], tags:["pixar","mexican","family","music"], icon:"music" },
+  { id:184, title:"Marriage Story", year:2019, type:"movie", moods:["tearjerker","dramatic","romantic"], tags:["divorce","raw","acting","intimate","baumbach"], icon:"heart" },
+  { id:185, title:"Your Name", year:2016, type:"movie", moods:["tearjerker","romantic","mind-bending"], tags:["anime","body-swap","beautiful","emotional"], icon:"star" },
+  { id:186, title:"A Star Is Born", year:2018, type:"movie", moods:["tearjerker","romantic","dramatic"], tags:["music","love","addiction","raw"], icon:"music" },
+  { id:187, title:"Dear Zachary", year:2008, type:"movie", moods:["tearjerker","dramatic"], tags:["documentary","true-story","devastating","justice"], icon:"pen" },
+  { id:188, title:"Room", year:2015, type:"movie", moods:["tearjerker","dramatic"], tags:["captivity","mother-son","brie-larson","intense","hopeful"], icon:"door" },
+  { id:189, title:"Past Lives", year:2023, type:"movie", moods:["tearjerker","romantic","dramatic"], tags:["korean-american","what-if","quiet","beautiful","a24"], icon:"hourglass" },
+  { id:190, title:"Dancer in the Dark", year:2000, type:"movie", moods:["tearjerker","dramatic","nuts"], tags:["björk","musical","lars-von-trier","devastating","unique"], icon:"music" },
+  { id:191, title:"Never Let Me Go", year:2010, type:"movie", moods:["tearjerker","dramatic","mind-bending"], tags:["sci-fi","quiet","ishiguro","acceptance","haunting"], icon:"heart" },
+  { id:192, title:"The Farewell", year:2019, type:"movie", moods:["tearjerker","dramatic","fun"], tags:["chinese-american","family","cultural","bittersweet"], icon:"globe" },
+  { id:193, title:"The Father", year:2020, type:"movie", moods:["tearjerker","dramatic","mind-bending"], tags:["dementia","anthony-hopkins","disorienting","devastating"], icon:"door" },
+  { id:194, title:"Ikiru", year:1952, type:"movie", moods:["tearjerker","dramatic"], tags:["kurosawa","japanese","meaning-of-life","bureaucracy","classic"], icon:"hourglass" },
+  { id:195, title:"Capernaum", year:2018, type:"movie", moods:["tearjerker","dramatic"], tags:["lebanese","poverty","child-protagonist","raw","powerful"], icon:"star" },
+  { id:196, title:"Millennium Actress", year:2001, type:"movie", moods:["tearjerker","romantic","mind-bending"], tags:["anime","satoshi-kon","cinema","time","beautiful"], icon:"film" },
+  // ── NOSTALGIC ──
+  { id:197, title:"The Breakfast Club", year:1985, type:"movie", moods:["nostalgic","dramatic","fun"], tags:["teen","80s","john-hughes","coming-of-age"], icon:"star" },
+  { id:198, title:"Stranger Things", year:2016, type:"series", moods:["nostalgic","scary","action","fun"], tags:["80s","supernatural","kids","adventure"], icon:"bolt" },
+  { id:199, title:"Back to the Future", year:1985, type:"movie", moods:["nostalgic","fun","action"], tags:["time-travel","80s","adventure","iconic"], icon:"bolt" },
+  { id:200, title:"Forrest Gump", year:1994, type:"movie", moods:["nostalgic","tearjerker","fun","dramatic"], tags:["american-history","love","journey","iconic"], icon:"feather" },
+  { id:201, title:"The Princess Bride", year:1987, type:"movie", moods:["nostalgic","fun","romantic"], tags:["fairy-tale","adventure","quotable","charming"], icon:"crown" },
+  { id:202, title:"Stand by Me", year:1986, type:"movie", moods:["nostalgic","dramatic","tearjerker"], tags:["coming-of-age","friendship","adventure","stephen-king"], icon:"compass" },
+  { id:203, title:"E.T. the Extra-Terrestrial", year:1982, type:"movie", moods:["nostalgic","chill","tearjerker"], tags:["spielberg","alien","childhood","iconic"], icon:"star" },
+  { id:204, title:"Gilmore Girls", year:2000, type:"series", moods:["nostalgic","fun","chill","romantic"], tags:["mother-daughter","small-town","fast-dialogue","cozy"], icon:"coffee" },
+  { id:205, title:"Indiana Jones: Raiders of the Lost Ark", year:1981, type:"movie", moods:["nostalgic","action","fun"], tags:["adventure","80s","iconic","spielberg"], icon:"compass" },
+  { id:206, title:"Freaks and Geeks", year:1999, type:"series", moods:["nostalgic","fun","dramatic"], tags:["teen","80s-setting","coming-of-age","cult","cancelled-too-soon"], icon:"star" },
+  { id:207, title:"Dazed and Confused", year:1993, type:"movie", moods:["nostalgic","fun","chill"], tags:["70s","linklater","high-school","hanging-out","ensemble"], icon:"music" },
+  { id:208, title:"The Goonies", year:1985, type:"movie", moods:["nostalgic","fun","action"], tags:["adventure","kids","80s","treasure","iconic"], icon:"key" },
+  { id:209, title:"Almost Famous", year:2000, type:"movie", moods:["nostalgic","dramatic","fun"], tags:["music","70s","coming-of-age","rock-and-roll","cameron-crowe"], icon:"music" },
+  { id:210, title:"Cinema Paradiso", year:1988, type:"movie", moods:["nostalgic","tearjerker","romantic"], tags:["italian","cinema","childhood","sweeping","classic"], icon:"film" },
+  { id:211, title:"Ferris Bueller's Day Off", year:1986, type:"movie", moods:["nostalgic","fun"], tags:["john-hughes","teen","80s","breaking-fourth-wall","iconic"], icon:"sun" },
+  { id:212, title:"The Royal Tenenbaums", year:2001, type:"movie", moods:["nostalgic","fun","dramatic"], tags:["wes-anderson","family","quirky","ensemble"], icon:"book" },
+  { id:213, title:"Twin Peaks", year:1990, type:"series", moods:["nostalgic","scary","mind-bending","nuts"], tags:["lynch","small-town","surreal","groundbreaking","cult"], icon:"tree" },
+  { id:214, title:"Goodfellas", year:1990, type:"movie", moods:["nostalgic","dramatic","action"], tags:["mafia","scorsese","true-story","iconic","rise-and-fall"], icon:"diamond" },
+  { id:215, title:"Blade Runner", year:1982, type:"movie", moods:["nostalgic","mind-bending","dramatic"], tags:["sci-fi","noir","ridley-scott","iconic","philosophical"], icon:"eye" },
+  { id:216, title:"Labyrinth", year:1986, type:"movie", moods:["nostalgic","fun","nuts"], tags:["fantasy","bowie","puppets","80s","cult"], icon:"spiral" },
+  // ── DEEP CUTS & INTERNATIONAL ──
+  { id:217, title:"The Act of Killing", year:2012, type:"movie", moods:["dramatic","nuts","mind-bending"], tags:["documentary","indonesian","genocide","surreal","disturbing"], icon:"mask" },
+  { id:218, title:"Gomorrah", year:2014, type:"series", moods:["dramatic","action","scary"], tags:["italian","mafia","neapolitan","gritty","raw"], icon:"crown" },
+  { id:219, title:"Border", year:2018, type:"movie", moods:["mind-bending","romantic","nuts"], tags:["swedish","fantasy","identity","strange","unique"], icon:"leaf" },
+  { id:220, title:"Bacurau", year:2019, type:"movie", moods:["nuts","action","mind-bending"], tags:["brazilian","genre-bending","political","violent","cult"], icon:"target" },
+  { id:221, title:"The Worst Person in the World", year:2021, type:"movie", moods:["romantic","dramatic","fun"], tags:["norwegian","millennial","chapters","modern","honest"], icon:"compass" },
+  { id:222, title:"Mindhunter", year:2017, type:"series", moods:["dramatic","scary","mind-bending"], tags:["serial-killer","fbi","fincher","slow-burn","psychological"], icon:"eye" },
+  { id:223, title:"Victoria", year:2015, type:"movie", moods:["action","dramatic","nuts"], tags:["one-take","german","heist","real-time","experimental"], icon:"clock" },
+  { id:224, title:"Phantom of the Paradise", year:1974, type:"movie", moods:["nuts","fun","nostalgic"], tags:["de-palma","musical","gothic","satire","cult-classic"], icon:"mask" },
+  { id:225, title:"Fallen Angels", year:1995, type:"movie", moods:["romantic","chill","nuts"], tags:["wong-kar-wai","hong-kong","neon","assassin","lonely"], icon:"moon" },
+  { id:226, title:"Cure", year:1997, type:"movie", moods:["scary","mind-bending"], tags:["japanese","kiyoshi-kurosawa","hypnosis","slow-burn","unsettling"], icon:"spiral" },
+  { id:227, title:"Memories of Murder", year:2003, type:"movie", moods:["dramatic","mind-bending","scary"], tags:["korean","bong-joon-ho","true-crime","procedural","masterful"], icon:"eye" },
+  { id:228, title:"The Handmaid's Tale", year:2017, type:"series", moods:["dramatic","scary"], tags:["dystopia","patriarchy","intense","literary"], icon:"eye" },
+  { id:229, title:"Wild at Heart", year:1990, type:"movie", moods:["nuts","romantic","nostalgic"], tags:["lynch","road-movie","nicolas-cage","surreal","palme-dor"], icon:"flame" },
+  { id:230, title:"Blue Velvet", year:1986, type:"movie", moods:["scary","mind-bending","nuts","nostalgic"], tags:["lynch","small-town","dark-underbelly","disturbing","iconic"], icon:"eye" },
+  { id:231, title:"The Vanishing", year:1988, type:"movie", moods:["scary","mind-bending"], tags:["dutch","obsession","slow-burn","ending","original"], icon:"eye" },
+  { id:232, title:"Undone", year:2019, type:"series", moods:["mind-bending","dramatic","fun"], tags:["rotoscope","time","mental-health","unique"], icon:"spiral" },
+  { id:233, title:"Tangerine", year:2015, type:"movie", moods:["fun","dramatic","nuts"], tags:["trans","christmas","iphone-shot","sean-baker","la"], icon:"sun" },
+  { id:234, title:"Wings of Desire", year:1987, type:"movie", moods:["romantic","chill","mind-bending"], tags:["german","wim-wenders","angels","berlin","poetic"], icon:"feather" },
+  { id:235, title:"The Lure", year:2015, type:"movie", moods:["nuts","scary","fun"], tags:["polish","mermaid","musical","horror","genre-bending"], icon:"wave" },
+  { id:236, title:"Rocks", year:2019, type:"movie", moods:["dramatic","chill"], tags:["british","teen","non-actors","social-realism","warmth"], icon:"star" },
+  // ── INTERNATIONAL ACCLAIMED ──
+  { id:237, title:"City of God", year:2002, type:"movie", moods:["dramatic","action","nuts"], tags:["brazilian","favela","epic","raw","masterpiece"], icon:"bolt" },
+  { id:238, title:"Pather Panchali", year:1955, type:"movie", moods:["dramatic","tearjerker","chill"], tags:["indian","satyajit-ray","childhood","poverty","poetic"], icon:"leaf" },
+  { id:239, title:"Yi Yi", year:2000, type:"movie", moods:["dramatic","chill","tearjerker"], tags:["taiwanese","edward-yang","family","life","epic"], icon:"hourglass" },
+  { id:240, title:"The Lives of Others", year:2006, type:"movie", moods:["dramatic","tearjerker"], tags:["german","surveillance","cold-war","tension","devastating"], icon:"radio" },
+  { id:241, title:"Pan's Labyrinth", year:2006, type:"movie", moods:["scary","dramatic","nostalgic"], tags:["spanish","del-toro","fantasy","war","fairy-tale-dark"], icon:"spiral" },
+  { id:242, title:"Rashomon", year:1950, type:"movie", moods:["dramatic","mind-bending"], tags:["japanese","kurosawa","perspective","classic","influential"], icon:"prism" },
+  { id:243, title:"The Secret in Their Eyes", year:2009, type:"movie", moods:["dramatic","romantic","mind-bending"], tags:["argentinian","mystery","twist","oscar-winner","obsession"], icon:"eye" },
+  { id:245, title:"Crouching Tiger, Hidden Dragon", year:2000, type:"movie", moods:["action","romantic","dramatic"], tags:["chinese","wuxia","ang-lee","beautiful","poetic"], icon:"wind" },
+  { id:246, title:"Roma", year:2018, type:"movie", moods:["dramatic","tearjerker","chill"], tags:["mexican","cuarón","black-and-white","autobiographical","gorgeous"], icon:"wave" },
+  { id:248, title:"Talk to Her", year:2002, type:"movie", moods:["dramatic","romantic","nuts"], tags:["spanish","almodóvar","obsession","unconventional","beautiful"], icon:"heart" },
+  { id:249, title:"The Intouchables", year:2011, type:"movie", moods:["fun","dramatic","tearjerker"], tags:["french","friendship","disability","heartwarming","crowd-pleaser"], icon:"heart" },
+  { id:250, title:"A Prophet", year:2009, type:"movie", moods:["dramatic","action"], tags:["french","prison","crime","rise","audiard"], icon:"key" },
+  { id:251, title:"Atonement", year:2007, type:"movie", moods:["romantic","dramatic","tearjerker"], tags:["british","wwii","literary","devastating","beautiful"], icon:"pen" },
+  { id:252, title:"Ip Man", year:2008, type:"movie", moods:["action","dramatic"], tags:["chinese","martial-arts","biographical","elegant","inspiring"], icon:"bolt" },
+  { id:253, title:"Ida", year:2013, type:"movie", moods:["dramatic","chill"], tags:["polish","black-and-white","identity","nun","gorgeous-frames"], icon:"cross" },
+  { id:254, title:"Wild Strawberries", year:1957, type:"movie", moods:["dramatic","tearjerker","mind-bending"], tags:["swedish","bergman","aging","memory","dream"], icon:"hourglass" },
+  { id:255, title:"The Hunt", year:2012, type:"movie", moods:["dramatic","scary"], tags:["danish","mads-mikkelsen","false-accusation","tense","devastating"], icon:"eye" },
+  { id:257, title:"Spring, Summer, Fall, Winter... and Spring", year:2003, type:"movie", moods:["chill","dramatic","mind-bending"], tags:["korean","kim-ki-duk","buddhist","seasons","meditative"], icon:"leaf" },
+  { id:258, title:"Bicycle Thieves", year:1948, type:"movie", moods:["dramatic","tearjerker"], tags:["italian","neorealism","poverty","father-son","classic"], icon:"compass" },
+  { id:259, title:"The Battle of Algiers", year:1966, type:"movie", moods:["dramatic","action"], tags:["algerian","revolution","docudrama","influential","raw"], icon:"flame" },
+  { id:260, title:"Y Tu Mamá También", year:2001, type:"movie", moods:["romantic","dramatic","fun"], tags:["mexican","cuarón","road-trip","coming-of-age","raw"], icon:"wave" },
+  { id:261, title:"4 Months, 3 Weeks and 2 Days", year:2007, type:"movie", moods:["dramatic","scary"], tags:["romanian","tension","political","raw","palme-dor"], icon:"clock" },
+  { id:262, title:"Raise the Red Lantern", year:1991, type:"movie", moods:["dramatic"], tags:["chinese","zhang-yimou","patriarchy","visual","period"], icon:"flame" },
+  { id:263, title:"The Salesman", year:2016, type:"movie", moods:["dramatic","mind-bending"], tags:["iranian","farhadi","theatre","tension","moral"], icon:"mask" },
+  { id:264, title:"Toni Erdmann", year:2016, type:"movie", moods:["fun","dramatic","tearjerker"], tags:["german","father-daughter","cringe","long","surprising"], icon:"mask" },
+  { id:265, title:"Leviathan", year:2014, type:"movie", moods:["dramatic"], tags:["russian","corruption","bleak","beautiful","political"], icon:"mountain" },
+  { id:266, title:"The White Ribbon", year:2009, type:"movie", moods:["dramatic","scary","mind-bending"], tags:["german","haneke","black-and-white","village","dread"], icon:"cross" },
+  { id:267, title:"Uncle Boonmee Who Can Recall His Past Lives", year:2010, type:"movie", moods:["mind-bending","chill"], tags:["thai","apichatpong","spiritual","slow","palme-dor"], icon:"leaf" },
+  { id:268, title:"Taxi Tehran", year:2015, type:"movie", moods:["fun","dramatic","chill"], tags:["iranian","panahi","taxi","banned-director","clever"], icon:"compass" },
+  { id:269, title:"Woman at War", year:2018, type:"movie", moods:["fun","dramatic","chill"], tags:["icelandic","eco-activist","quirky","musical-interludes","charming"], icon:"mountain" },
+  { id:270, title:"Embrace of the Serpent", year:2015, type:"movie", moods:["mind-bending","dramatic","chill"], tags:["colombian","amazon","black-and-white","spiritual","stunning"], icon:"leaf" },
+  { id:271, title:"Under the Shadow", year:2016, type:"movie", moods:["scary","dramatic"], tags:["iranian","war","djinn","motherhood","tense"], icon:"door" },
+  { id:272, title:"System Crasher", year:2019, type:"movie", moods:["dramatic","nuts"], tags:["german","child-protagonist","foster-care","intense","raw"], icon:"bolt" },
+  { id:273, title:"Corpus Christi", year:2019, type:"movie", moods:["dramatic"], tags:["polish","faith","identity","small-town","compelling"], icon:"cross" },
+  { id:274, title:"The Painter of Battles", year:2023, type:"movie", moods:["dramatic","mind-bending"], tags:["spanish","war-photography","guilt","atmospheric"], icon:"camera" },
+  { id:275, title:"How to Train Your Dragon", year:2010, type:"movie", moods:["fun","chill","tearjerker"], tags:["animation","friendship","adventure","viking","beautiful"], icon:"wind" },
+  // ── MORE ACCLAIMED & CULT ──
+  { id:276, title:"Whiplash", year:2014, type:"movie", moods:["dramatic","nuts","action"], tags:["music","obsession","teacher-student","intense","a24"], icon:"music" },
+  { id:277, title:"No Country for Old Men", year:2007, type:"movie", moods:["dramatic","scary","action"], tags:["coen-brothers","villain","texas","tension","masterpiece"], icon:"dagger" },
+  { id:278, title:"The Godfather", year:1972, type:"movie", moods:["dramatic","action"], tags:["mafia","family","coppola","iconic","epic"], icon:"crown" },
+  { id:279, title:"The Godfather Part II", year:1974, type:"movie", moods:["dramatic","action"], tags:["mafia","prequel-sequel","coppola","epic","immigration"], icon:"crown" },
+  { id:280, title:"Pulp Fiction", year:1994, type:"movie", moods:["nuts","fun","action"], tags:["tarantino","nonlinear","dialogue","iconic","cult"], icon:"bolt" },
+  { id:281, title:"2001: A Space Odyssey", year:1968, type:"movie", moods:["mind-bending","chill"], tags:["kubrick","sci-fi","monolith","visual","influential"], icon:"infinity" },
+  { id:282, title:"Taxi Driver", year:1976, type:"movie", moods:["dramatic","scary","nuts"], tags:["scorsese","isolation","new-york","de-niro","iconic"], icon:"moon" },
+  { id:283, title:"Apocalypse Now", year:1979, type:"movie", moods:["dramatic","nuts","action"], tags:["vietnam","coppola","descent","epic","hallucinatory"], icon:"flame" },
+  { id:284, title:"Psycho", year:1960, type:"movie", moods:["scary","mind-bending","nostalgic"], tags:["hitchcock","twist","iconic","motel","classic"], icon:"key" },
+  { id:285, title:"Rear Window", year:1954, type:"movie", moods:["scary","fun","nostalgic"], tags:["hitchcock","voyeurism","mystery","contained","classic"], icon:"camera" },
+  { id:286, title:"Vertigo", year:1958, type:"movie", moods:["mind-bending","romantic","scary"], tags:["hitchcock","obsession","identity","san-francisco","classic"], icon:"spiral" },
+  { id:287, title:"Chinatown", year:1974, type:"movie", moods:["dramatic","mind-bending","nostalgic"], tags:["noir","polanski","mystery","la","twist"], icon:"eye" },
+  { id:288, title:"One Flew Over the Cuckoo's Nest", year:1975, type:"movie", moods:["dramatic","fun","nuts"], tags:["asylum","rebellion","nicholson","classic","system"], icon:"door" },
+  { id:289, title:"A Clockwork Orange", year:1971, type:"movie", moods:["nuts","scary","mind-bending"], tags:["kubrick","dystopia","violence","provocative","cult"], icon:"eye" },
+  { id:290, title:"Trainspotting", year:1996, type:"movie", moods:["nuts","dramatic","fun"], tags:["british","drugs","edinburgh","energetic","cult"], icon:"bolt" },
+  { id:291, title:"Reservoir Dogs", year:1992, type:"movie", moods:["nuts","action","dramatic"], tags:["tarantino","heist","dialogue","nonlinear","debut"], icon:"dagger" },
+  { id:292, title:"Fargo", year:1996, type:"movie", moods:["fun","dramatic","nuts"], tags:["coen-brothers","minnesota","dark-comedy","crime","quirky"], icon:"mountain" },
+  { id:293, title:"The Big Lebowski", year:1998, type:"movie", moods:["fun","nuts","nostalgic"], tags:["coen-brothers","stoner","bowling","cult","quotable"], icon:"star" },
+  { id:294, title:"Requiem for a Dream", year:2000, type:"movie", moods:["dramatic","scary","nuts"], tags:["aronofsky","addiction","devastating","visual","intense"], icon:"spiral" },
+  { id:295, title:"Eraserhead", year:1977, type:"movie", moods:["scary","nuts","mind-bending"], tags:["lynch","surreal","black-and-white","nightmare","debut"], icon:"spiral" },
+  { id:296, title:"The Seventh Seal", year:1957, type:"movie", moods:["dramatic","mind-bending"], tags:["swedish","bergman","death","chess","existential"], icon:"hourglass" },
+  { id:297, title:"8½", year:1963, type:"movie", moods:["mind-bending","dramatic","fun"], tags:["italian","fellini","meta","filmmaking","dream"], icon:"film" },
+  { id:298, title:"Seven Samurai", year:1954, type:"movie", moods:["action","dramatic","nostalgic"], tags:["japanese","kurosawa","samurai","epic","influential"], icon:"dagger" },
+  { id:299, title:"Tokyo Story", year:1953, type:"movie", moods:["dramatic","tearjerker","chill"], tags:["japanese","ozu","family","aging","quiet"], icon:"hourglass" },
+  { id:300, title:"Solaris", year:1972, type:"movie", moods:["mind-bending","dramatic","chill"], tags:["russian","tarkovsky","sci-fi","grief","meditative"], icon:"spiral" },
+  { id:301, title:"Persona", year:1966, type:"movie", moods:["mind-bending","dramatic"], tags:["swedish","bergman","identity","duality","arthouse"], icon:"mask" },
+  { id:302, title:"The 400 Blows", year:1959, type:"movie", moods:["dramatic","chill","tearjerker"], tags:["french","truffaut","childhood","new-wave","classic"], icon:"wind" },
+  { id:303, title:"Breathless", year:1960, type:"movie", moods:["fun","dramatic","romantic"], tags:["french","godard","new-wave","paris","revolutionary"], icon:"wind" },
+  { id:304, title:"Contempt", year:1963, type:"movie", moods:["dramatic","romantic"], tags:["french","godard","filmmaking","marriage","beautiful"], icon:"film" },
+  { id:305, title:"La Dolce Vita", year:1960, type:"movie", moods:["dramatic","fun","romantic"], tags:["italian","fellini","rome","celebrity","iconic"], icon:"star" },
+  { id:306, title:"Andrei Rublev", year:1966, type:"movie", moods:["dramatic","mind-bending"], tags:["russian","tarkovsky","medieval","epic","spiritual"], icon:"cross" },
+  { id:307, title:"Come and See", year:1985, type:"movie", moods:["dramatic","scary"], tags:["russian","wwii","devastating","visceral","masterpiece"], icon:"eye" },
+  { id:308, title:"Ran", year:1985, type:"movie", moods:["dramatic","action"], tags:["japanese","kurosawa","shakespeare","epic","colorful"], icon:"flame" },
+  { id:309, title:"Princess Mononoke", year:1997, type:"movie", moods:["action","dramatic","chill"], tags:["anime","ghibli","miyazaki","nature-vs-industry","epic"], icon:"leaf" },
+  { id:310, title:"Akira", year:1988, type:"movie", moods:["action","mind-bending","nuts"], tags:["anime","cyberpunk","tokyo","influential","visionary"], icon:"bolt" },
+  { id:311, title:"Ghost in the Shell", year:1995, type:"movie", moods:["mind-bending","action"], tags:["anime","cyberpunk","identity","influential","philosophical"], icon:"eye" },
+  { id:312, title:"Cowboy Bebop", year:1998, type:"series", moods:["action","fun","chill"], tags:["anime","jazz","space","bounty-hunters","stylish"], icon:"music" },
+  { id:313, title:"Neon Genesis Evangelion", year:1995, type:"series", moods:["mind-bending","dramatic","action"], tags:["anime","mecha","psychology","existential","influential"], icon:"prism" },
+  { id:314, title:"Monster", year:2004, type:"series", moods:["mind-bending","scary","dramatic"], tags:["anime","naoki-urasawa","serial-killer","slow-burn","literary"], icon:"eye" },
+  { id:315, title:"Vinland Saga", year:2019, type:"series", moods:["action","dramatic","tearjerker"], tags:["anime","viking","revenge","growth","epic"], icon:"dagger" },
+  { id:316, title:"Attack on Titan", year:2013, type:"series", moods:["action","dramatic","mind-bending"], tags:["anime","survival","twists","epic","dark"], icon:"shield" },
+  { id:317, title:"Steins;Gate", year:2011, type:"series", moods:["mind-bending","fun","tearjerker"], tags:["anime","time-travel","thriller","clever","emotional"], icon:"clock" },
+  { id:318, title:"Made in Abyss", year:2017, type:"series", moods:["action","tearjerker","scary"], tags:["anime","adventure","dark","beautiful","deceptive"], icon:"mountain" },
+  { id:319, title:"Mob Psycho 100", year:2016, type:"series", moods:["fun","action","tearjerker"], tags:["anime","psychic","comedy","growth","heartwarming"], icon:"bolt" },
+  { id:320, title:"Ping Pong the Animation", year:2014, type:"series", moods:["dramatic","fun","tearjerker"], tags:["anime","sports","artistic","friendship","short"], icon:"bolt" },
+  // ── MORE INTERNATIONAL ──
+  { id:321, title:"The Diving Bell and the Butterfly", year:2007, type:"movie", moods:["dramatic","tearjerker","mind-bending"], tags:["french","disability","memoir","visual","beautiful"], icon:"feather" },
+  { id:322, title:"Persepolis", year:2007, type:"movie", moods:["dramatic","fun"], tags:["iranian","animation","autobiography","revolution","witty"], icon:"star" },
+  { id:323, title:"Waltz with Bashir", year:2008, type:"movie", moods:["dramatic","mind-bending","scary"], tags:["israeli","animation","war","memory","documentary"], icon:"spiral" },
+  { id:324, title:"The Orphanage", year:2007, type:"movie", moods:["scary","dramatic","tearjerker"], tags:["spanish","ghost","motherhood","twist","atmospheric"], icon:"door" },
+  { id:325, title:"Let the Right One In", year:2008, type:"movie", moods:["scary","romantic","dramatic"], tags:["swedish","vampire","childhood","snow","beautiful"], icon:"moon" },
+  { id:326, title:"Audition", year:1999, type:"movie", moods:["scary","nuts","dramatic"], tags:["japanese","takashi-miike","slow-burn","disturbing","twist"], icon:"skull" },
+  { id:327, title:"Caché", year:2005, type:"movie", moods:["dramatic","mind-bending","scary"], tags:["french","haneke","surveillance","guilt","colonial"], icon:"camera" },
+  { id:328, title:"The Celebration", year:1998, type:"movie", moods:["dramatic","nuts"], tags:["danish","dogme-95","family-secrets","dinner","raw"], icon:"mask" },
+  { id:329, title:"La Haine", year:1995, type:"movie", moods:["dramatic","nuts","action"], tags:["french","banlieue","black-and-white","police","raw"], icon:"flame" },
+  { id:330, title:"Departures", year:2008, type:"movie", moods:["dramatic","tearjerker","chill"], tags:["japanese","death","ritual","beautiful","oscar-winner"], icon:"leaf" },
+  { id:331, title:"Still Walking", year:2008, type:"movie", moods:["dramatic","chill","tearjerker"], tags:["japanese","kore-eda","family","day-in-life","subtle"], icon:"leaf" },
+  { id:332, title:"Hero", year:2002, type:"movie", moods:["action","dramatic","chill"], tags:["chinese","zhang-yimou","wuxia","colorful","gorgeous"], icon:"dagger" },
+  { id:333, title:"The Umbrellas of Cherbourg", year:1964, type:"movie", moods:["romantic","tearjerker","nostalgic"], tags:["french","musical","all-sung","colorful","demy"], icon:"music" },
+  { id:334, title:"Amelie", year:2001, type:"movie", moods:["romantic","fun","chill"], tags:["french","whimsical","paris","feel-good","visual"], icon:"sparkle" },
+  { id:335, title:"Aguirre, the Wrath of God", year:1972, type:"movie", moods:["dramatic","nuts","mind-bending"], tags:["german","herzog","jungle","madness","kinski"], icon:"mountain" },
+  { id:336, title:"Fitzcarraldo", year:1982, type:"movie", moods:["dramatic","nuts"], tags:["german","herzog","amazon","obsession","insane-production"], icon:"mountain" },
+  { id:337, title:"Hausu", year:1977, type:"movie", moods:["nuts","scary","fun"], tags:["japanese","surreal","psychedelic","haunted-house","cult"], icon:"door" },
+  { id:338, title:"Tekkonkinkreet", year:2006, type:"movie", moods:["action","dramatic","mind-bending"], tags:["anime","brothers","city","beautiful","dark"], icon:"grid" },
+  { id:339, title:"Wolfwalkers", year:2020, type:"movie", moods:["chill","dramatic","fun"], tags:["animation","irish","folklore","hand-drawn","beautiful"], icon:"leaf" },
+  { id:340, title:"The Triplets of Belleville", year:2003, type:"movie", moods:["fun","nuts","chill"], tags:["french","animation","wordless","quirky","cycling"], icon:"wind" },
+  { id:341, title:"I Lost My Body", year:2019, type:"movie", moods:["romantic","dramatic","mind-bending"], tags:["french","animation","hand","poetic","netflix"], icon:"wind" },
+  { id:342, title:"The Red Turtle", year:2016, type:"movie", moods:["chill","tearjerker"], tags:["animation","ghibli","wordless","island","beautiful"], icon:"wave" },
+  { id:343, title:"Fantastic Mr. Fox", year:2009, type:"movie", moods:["fun","chill"], tags:["wes-anderson","animation","stop-motion","witty","charming"], icon:"leaf" },
+  { id:344, title:"The Iron Giant", year:1999, type:"movie", moods:["chill","tearjerker","nostalgic"], tags:["animation","robot","cold-war","heartwarming","underrated"], icon:"shield" },
+  { id:345, title:"Ratatouille", year:2007, type:"movie", moods:["fun","chill","dramatic"], tags:["pixar","food","paris","anyone-can-cook","charming"], icon:"flame" },
+  { id:346, title:"WALL·E", year:2008, type:"movie", moods:["chill","romantic","tearjerker"], tags:["pixar","robot","environmental","minimal-dialogue","beautiful"], icon:"heart" },
+  { id:347, title:"Inside Out", year:2015, type:"movie", moods:["fun","tearjerker","chill"], tags:["pixar","emotions","growing-up","clever","devastating-sadness"], icon:"sparkle" },
+  { id:348, title:"Spider-Man: Into the Spider-Verse", year:2018, type:"movie", moods:["action","fun","nuts"], tags:["animation","superhero","visual-innovation","miles-morales","energetic"], icon:"bolt" },
+  { id:349, title:"The Mitchells vs. the Machines", year:2021, type:"movie", moods:["fun","action","chill"], tags:["animation","family","tech","energetic","underrated"], icon:"sparkle" },
+  { id:352, title:"Wolf Children", year:2012, type:"movie", moods:["tearjerker","chill","dramatic"], tags:["anime","motherhood","nature","growing-up","beautiful"], icon:"leaf" },
+  { id:353, title:"A Silent Voice", year:2016, type:"movie", moods:["tearjerker","romantic","dramatic"], tags:["anime","bullying","redemption","deafness","emotional"], icon:"heart" },
+  { id:354, title:"Metropolis", year:1927, type:"movie", moods:["mind-bending","dramatic","nostalgic"], tags:["german","silent-film","sci-fi","expressionism","influential"], icon:"grid" },
+  { id:355, title:"Nosferatu", year:1922, type:"movie", moods:["scary","nostalgic"], tags:["german","silent-film","vampire","expressionism","iconic"], icon:"skull" },
+  // ── 1001 MOVIES / MORE SERIES / ANIME ──
+  {id:356,title:"Casablanca",year:1942,type:"movie",moods:["romantic","dramatic","nostalgic"],tags:["wwii","classic","quotable","bogart"],icon:"plane"},
+  {id:357,title:"Singin' in the Rain",year:1952,type:"movie",moods:["fun","romantic","nostalgic"],tags:["musical","hollywood","joyful","classic"],icon:"music"},
+  {id:358,title:"Sunset Boulevard",year:1950,type:"movie",moods:["dramatic","nuts","nostalgic"],tags:["hollywood","noir","faded-glory","classic"],icon:"star"},
+  {id:359,title:"Dr. Strangelove",year:1964,type:"movie",moods:["fun","nuts","nostalgic"],tags:["kubrick","satire","cold-war","dark-comedy"],icon:"bolt"},
+  {id:360,title:"Jaws",year:1975,type:"movie",moods:["scary","action","nostalgic"],tags:["spielberg","shark","summer","iconic"],icon:"wave"},
+  {id:361,title:"Raging Bull",year:1980,type:"movie",moods:["dramatic","action","nostalgic"],tags:["scorsese","boxing","de-niro","intense"],icon:"bolt"},
+  {id:362,title:"Do the Right Thing",year:1989,type:"movie",moods:["dramatic","nuts"],tags:["spike-lee","race","brooklyn","powerful"],icon:"flame"},
+  {id:363,title:"Network",year:1976,type:"movie",moods:["dramatic","nuts","nostalgic"],tags:["media","satire","prophetic","mad-as-hell"],icon:"radio"},
+  {id:364,title:"The Third Man",year:1949,type:"movie",moods:["dramatic","mind-bending","nostalgic"],tags:["british","noir","vienna","classic"],icon:"eye"},
+  {id:365,title:"M",year:1931,type:"movie",moods:["dramatic","scary"],tags:["german","fritz-lang","serial-killer","expressionism"],icon:"eye"},
+  {id:366,title:"Days of Heaven",year:1978,type:"movie",moods:["dramatic","chill","romantic"],tags:["malick","beautiful","golden-hour","poetic"],icon:"sun"},
+  {id:367,title:"Badlands",year:1973,type:"movie",moods:["dramatic","chill","nostalgic"],tags:["malick","crime","lovers","narration"],icon:"sun"},
+  {id:368,title:"The Conversation",year:1974,type:"movie",moods:["mind-bending","dramatic","nostalgic"],tags:["surveillance","coppola","paranoia","quiet"],icon:"radio"},
+  {id:369,title:"The Wire",year:2002,type:"series",moods:["dramatic"],tags:["baltimore","crime","systemic","hbo","novelistic"],icon:"grid"},
+  {id:370,title:"Mad Men",year:2007,type:"series",moods:["dramatic","nostalgic"],tags:["60s","advertising","identity","stylish"],icon:"pen"},
+  {id:371,title:"The Americans",year:2013,type:"series",moods:["dramatic","action"],tags:["spy","cold-war","marriage","tense"],icon:"mask"},
+  {id:372,title:"Barry",year:2018,type:"series",moods:["fun","dramatic","nuts"],tags:["hitman","acting","dark-comedy","hbo"],icon:"mask"},
+  {id:373,title:"Arcane",year:2021,type:"series",moods:["action","dramatic","tearjerker"],tags:["animation","gorgeous","sisters","fantasy"],icon:"bolt"},
+  {id:374,title:"The Expanse",year:2015,type:"series",moods:["action","dramatic","mind-bending"],tags:["sci-fi","space","political","realistic"],icon:"globe"},
+  {id:375,title:"Halt and Catch Fire",year:2014,type:"series",moods:["dramatic","nostalgic"],tags:["tech","80s-90s","relationships","underrated"],icon:"grid"},
+  {id:376,title:"Counterpart",year:2017,type:"series",moods:["mind-bending","dramatic","action"],tags:["parallel-worlds","spy","cold-war"],icon:"door"},
+  {id:377,title:"Patriot",year:2015,type:"series",moods:["fun","dramatic","nuts"],tags:["spy","dark-comedy","folk-music","underrated"],icon:"music"},
+  {id:378,title:"Primal",year:2019,type:"series",moods:["action","dramatic","chill"],tags:["animation","wordless","prehistoric","visceral"],icon:"flame"},
+  {id:379,title:"Over the Garden Wall",year:2014,type:"series",moods:["chill","scary","nostalgic"],tags:["animation","autumn","fairy-tale","short"],icon:"leaf"},
+  {id:380,title:"Midnight Diner",year:2009,type:"series",moods:["chill","dramatic","tearjerker"],tags:["japanese","food","slice-of-life","gentle"],icon:"coffee"},
+  {id:381,title:"Alice in Borderland",year:2020,type:"series",moods:["action","nuts","scary"],tags:["japanese","survival-game","death-game","twists"],icon:"grid"},
+  {id:382,title:"Fullmetal Alchemist: Brotherhood",year:2009,type:"series",moods:["action","dramatic","tearjerker"],tags:["anime","alchemy","brothers","epic"],icon:"hex"},
+  {id:383,title:"Hunter x Hunter",year:2011,type:"series",moods:["action","fun","dramatic"],tags:["anime","adventure","dark-turns","friendship"],icon:"target"},
+  {id:384,title:"Death Note",year:2006,type:"series",moods:["mind-bending","dramatic","nuts"],tags:["anime","cat-and-mouse","moral","supernatural"],icon:"book"},
+  {id:385,title:"Mushishi",year:2005,type:"series",moods:["chill","mind-bending"],tags:["anime","nature","spiritual","meditative"],icon:"leaf"},
+  {id:386,title:"Odd Taxi",year:2021,type:"series",moods:["mind-bending","fun","dramatic"],tags:["anime","mystery","interconnected","clever"],icon:"compass"},
+  {id:387,title:"Samurai Champloo",year:2004,type:"series",moods:["action","fun","chill"],tags:["anime","samurai","hip-hop","stylish"],icon:"music"},
+  {id:388,title:"Paranoia Agent",year:2004,type:"series",moods:["mind-bending","scary","nuts"],tags:["anime","satoshi-kon","social-commentary"],icon:"spiral"},
+  {id:389,title:"March Comes in Like a Lion",year:2016,type:"series",moods:["dramatic","tearjerker","chill"],tags:["anime","shogi","depression","family"],icon:"leaf"},
+  {id:390,title:"Ranking of Kings",year:2021,type:"series",moods:["tearjerker","action","fun"],tags:["anime","fairy-tale","disability","heartwarming"],icon:"crown"},
+  {id:391,title:"Bocchi the Rock!",year:2022,type:"series",moods:["fun","chill","tearjerker"],tags:["anime","music","social-anxiety","comedy"],icon:"music"},
+  {id:392,title:"Legend of the Galactic Heroes",year:1988,type:"series",moods:["dramatic","action","mind-bending"],tags:["anime","space-opera","political","epic"],icon:"star"},
+  // ── 1001 MOVIES EXPANSION ──
+  {id:393,title:"Citizen Kane",year:1941,type:"movie",moods:["dramatic","mind-bending","nostalgic"],tags:["orson-welles","power","journalism","classic","innovative"],icon:"crown"},
+  {id:394,title:"Gone with the Wind",year:1939,type:"movie",moods:["dramatic","romantic","nostalgic"],tags:["civil-war","epic","classic","sweeping"],icon:"flame"},
+  {id:395,title:"The Wizard of Oz",year:1939,type:"movie",moods:["fun","nostalgic","chill"],tags:["fantasy","musical","classic","iconic","childhood"],icon:"sparkle"},
+  {id:396,title:"It's a Wonderful Life",year:1946,type:"movie",moods:["tearjerker","dramatic","nostalgic"],tags:["capra","christmas","classic","life-affirming"],icon:"star"},
+  {id:397,title:"Double Indemnity",year:1944,type:"movie",moods:["dramatic","mind-bending","nostalgic"],tags:["noir","femme-fatale","billy-wilder","classic"],icon:"eye"},
+  {id:398,title:"The Maltese Falcon",year:1941,type:"movie",moods:["dramatic","nostalgic"],tags:["noir","detective","bogart","classic"],icon:"eye"},
+  {id:399,title:"Notorious",year:1946,type:"movie",moods:["romantic","dramatic","scary","nostalgic"],tags:["hitchcock","spy","suspense","classic"],icon:"key"},
+  {id:401,title:"A Streetcar Named Desire",year:1951,type:"movie",moods:["dramatic","nostalgic"],tags:["brando","theatre","tennessee-williams","intense"],icon:"flame"},
+  {id:402,title:"On the Waterfront",year:1954,type:"movie",moods:["dramatic","nostalgic"],tags:["brando","corruption","docks","classic"],icon:"anchor"},
+  {id:403,title:"The Bridge on the River Kwai",year:1957,type:"movie",moods:["dramatic","action","nostalgic"],tags:["wwii","david-lean","pow","epic"],icon:"mountain"},
+  {id:404,title:"Ben-Hur",year:1959,type:"movie",moods:["dramatic","action","nostalgic"],tags:["biblical","epic","chariot-race","classic"],icon:"shield"},
+  {id:405,title:"North by Northwest",year:1959,type:"movie",moods:["action","fun","nostalgic"],tags:["hitchcock","chase","mistaken-identity","classic"],icon:"plane"},
+  {id:406,title:"Lawrence of Arabia",year:1962,type:"movie",moods:["dramatic","action","nostalgic"],tags:["david-lean","epic","desert","biographical"],icon:"sun"},
+  {id:407,title:"To Kill a Mockingbird",year:1962,type:"movie",moods:["dramatic","tearjerker","nostalgic"],tags:["racial-justice","classic","courtroom","literary"],icon:"book"},
+  {id:408,title:"The Birds",year:1963,type:"movie",moods:["scary","nostalgic"],tags:["hitchcock","nature","suspense","classic"],icon:"wind"},
+  {id:409,title:"The Good, the Bad and the Ugly",year:1966,type:"movie",moods:["action","fun","nostalgic"],tags:["western","leone","morricone","iconic"],icon:"target"},
+  {id:411,title:"Rosemary's Baby",year:1968,type:"movie",moods:["scary","dramatic","nostalgic"],tags:["polanski","pregnancy","paranoia","cult"],icon:"door"},
+  {id:412,title:"The Graduate",year:1967,type:"movie",moods:["dramatic","romantic","nostalgic"],tags:["coming-of-age","60s","dustin-hoffman"],icon:"eye"},
+  {id:413,title:"Butch Cassidy and the Sundance Kid",year:1969,type:"movie",moods:["fun","action","nostalgic"],tags:["western","buddy","newman-redford","charming"],icon:"compass"},
+  {id:414,title:"Easy Rider",year:1969,type:"movie",moods:["dramatic","chill","nostalgic"],tags:["road-movie","counterculture","60s","freedom"],icon:"wind"},
+  {id:415,title:"The Conformist",year:1970,type:"movie",moods:["dramatic","mind-bending"],tags:["italian","bertolucci","fascism","gorgeous"],icon:"mask"},
+  {id:417,title:"The French Connection",year:1971,type:"movie",moods:["action","dramatic","nostalgic"],tags:["crime","car-chase","gritty","new-york"],icon:"shield"},
+  {id:419,title:"The Sting",year:1973,type:"movie",moods:["fun","dramatic","nostalgic"],tags:["con-artist","newman-redford","twist","charming"],icon:"diamond"},
+  {id:420,title:"Blazing Saddles",year:1974,type:"movie",moods:["fun","nuts","nostalgic"],tags:["mel-brooks","western","satire","comedy"],icon:"star"},
+  {id:421,title:"Young Frankenstein",year:1974,type:"movie",moods:["fun","nostalgic"],tags:["mel-brooks","parody","black-and-white","classic-comedy"],icon:"bolt"},
+  {id:422,title:"Dog Day Afternoon",year:1975,type:"movie",moods:["dramatic","nuts","nostalgic"],tags:["al-pacino","heist","true-story","tension"],icon:"bolt"},
+  {id:423,title:"Barry Lyndon",year:1975,type:"movie",moods:["dramatic","chill","nostalgic"],tags:["kubrick","period","gorgeous","painterly"],icon:"crown"},
+  {id:424,title:"All the President's Men",year:1976,type:"movie",moods:["dramatic","nostalgic"],tags:["journalism","watergate","thriller","classic"],icon:"pen"},
+  {id:425,title:"Rocky",year:1976,type:"movie",moods:["dramatic","action","nostalgic"],tags:["boxing","underdog","iconic","philly"],icon:"bolt"},
+  {id:426,title:"Annie Hall",year:1977,type:"movie",moods:["romantic","fun","nostalgic"],tags:["new-york","neurotic","woody-allen","witty"],icon:"heart"},
+  {id:427,title:"Close Encounters of the Third Kind",year:1977,type:"movie",moods:["mind-bending","nostalgic"],tags:["spielberg","aliens","wonder","classic"],icon:"star"},
+  {id:428,title:"Star Wars",year:1977,type:"movie",moods:["action","fun","nostalgic"],tags:["sci-fi","space-opera","lucas","iconic"],icon:"star"},
+  {id:429,title:"The Deer Hunter",year:1978,type:"movie",moods:["dramatic","tearjerker","nostalgic"],tags:["vietnam","friendship","russian-roulette","devastating"],icon:"mountain"},
+  {id:430,title:"Manhattan",year:1979,type:"movie",moods:["romantic","fun","nostalgic"],tags:["woody-allen","new-york","black-and-white","witty"],icon:"grid"},
+  {id:432,title:"Being There",year:1979,type:"movie",moods:["fun","dramatic","mind-bending"],tags:["peter-sellers","satire","innocent","political"],icon:"leaf"},
+  {id:433,title:"The Elephant Man",year:1980,type:"movie",moods:["dramatic","tearjerker","nostalgic"],tags:["lynch","black-and-white","humanity","biographical"],icon:"heart"},
+  {id:434,title:"Ordinary People",year:1980,type:"movie",moods:["dramatic","tearjerker"],tags:["family","grief","therapy","suburban"],icon:"heart"},
+  {id:435,title:"Atlantic City",year:1980,type:"movie",moods:["dramatic","romantic"],tags:["louis-malle","aging","crime","bittersweet"],icon:"diamond"},
+  {id:436,title:"Raiders of the Lost Ark",year:1981,type:"movie",moods:["action","fun","nostalgic"],tags:["spielberg","adventure","iconic","indiana-jones"],icon:"compass"},
+  {id:437,title:"Das Boot",year:1981,type:"movie",moods:["dramatic","action","scary"],tags:["german","submarine","wwii","claustrophobic"],icon:"anchor"},
+  {id:438,title:"Chariots of Fire",year:1981,type:"movie",moods:["dramatic","nostalgic"],tags:["british","running","olympics","inspirational"],icon:"bolt"},
+  {id:441,title:"Tootsie",year:1982,type:"movie",moods:["fun","romantic","nostalgic"],tags:["comedy","cross-dressing","hoffman","classic"],icon:"mask"},
+  {id:442,title:"Gandhi",year:1982,type:"movie",moods:["dramatic","nostalgic"],tags:["biographical","epic","nonviolence","historical"],icon:"leaf"},
+  {id:443,title:"Scarface",year:1983,type:"movie",moods:["dramatic","action","nuts"],tags:["crime","al-pacino","rise-and-fall","excess"],icon:"diamond"},
+  {id:444,title:"Terms of Endearment",year:1983,type:"movie",moods:["tearjerker","dramatic","romantic"],tags:["mother-daughter","cancer","comedy-drama","classic"],icon:"heart"},
+  {id:445,title:"The Right Stuff",year:1983,type:"movie",moods:["dramatic","action","nostalgic"],tags:["space","pilots","american","epic"],icon:"plane"},
+  {id:446,title:"This Is Spinal Tap",year:1984,type:"movie",moods:["fun","nuts","nostalgic"],tags:["mockumentary","music","parody","quotable"],icon:"music"},
+  {id:447,title:"Amadeus",year:1984,type:"movie",moods:["dramatic","fun","nostalgic"],tags:["mozart","jealousy","music","period"],icon:"music"},
+  {id:448,title:"The Terminator",year:1984,type:"movie",moods:["action","scary","nostalgic"],tags:["sci-fi","time-travel","cameron","iconic"],icon:"bolt"},
+  {id:449,title:"Paris, Texas",year:1984,type:"movie",moods:["dramatic","tearjerker","chill"],tags:["wim-wenders","road-movie","family","poetic"],icon:"sun"},
+  {id:450,title:"A Room with a View",year:1985,type:"movie",moods:["romantic","chill","nostalgic"],tags:["british","period","italy","merchant-ivory"],icon:"sun"},
+  {id:452,title:"Out of Africa",year:1985,type:"movie",moods:["romantic","dramatic","nostalgic"],tags:["biographical","kenya","streep","sweeping"],icon:"mountain"},
+  {id:454,title:"Hannah and Her Sisters",year:1986,type:"movie",moods:["romantic","fun","dramatic"],tags:["woody-allen","new-york","family","ensemble"],icon:"heart"},
+  {id:455,title:"Platoon",year:1986,type:"movie",moods:["dramatic","action"],tags:["vietnam","oliver-stone","war","visceral"],icon:"flame"},
+  {id:457,title:"Full Metal Jacket",year:1987,type:"movie",moods:["dramatic","scary","nuts"],tags:["kubrick","vietnam","war","duality"],icon:"shield"},
+  {id:460,title:"Rain Man",year:1988,type:"movie",moods:["dramatic","fun","nostalgic"],tags:["brothers","autism","road-trip","hoffman-cruise"],icon:"compass"},
+  {id:461,title:"Die Hard",year:1988,type:"movie",moods:["action","fun","nostalgic"],tags:["christmas","bruce-willis","skyscraper","iconic"],icon:"bolt"},
+  {id:463,title:"Women on the Verge of a Nervous Breakdown",year:1988,type:"movie",moods:["fun","nuts","romantic"],tags:["spanish","almodóvar","comedy","colorful"],icon:"flame"},
+  {id:465,title:"Batman",year:1989,type:"movie",moods:["action","fun","nostalgic"],tags:["superhero","burton","gothic","nicholson"],icon:"mask"},
+  {id:466,title:"Glory",year:1989,type:"movie",moods:["dramatic","action","tearjerker"],tags:["civil-war","denzel","historical","powerful"],icon:"shield"},
+  {id:467,title:"Sex, Lies, and Videotape",year:1989,type:"movie",moods:["dramatic","mind-bending"],tags:["soderbergh","indie","debut","sexuality"],icon:"camera"},
+  {id:468,title:"Dances with Wolves",year:1990,type:"movie",moods:["dramatic","chill","nostalgic"],tags:["western","native-american","epic","costner"],icon:"mountain"},
+  {id:469,title:"Edward Scissorhands",year:1990,type:"movie",moods:["romantic","tearjerker","nostalgic"],tags:["burton","fairy-tale","outsider","depp"],icon:"scissors"},
+  {id:470,title:"Thelma & Louise",year:1991,type:"movie",moods:["action","dramatic","fun"],tags:["road-movie","feminist","ridley-scott","friendship"],icon:"compass"},
+  {id:472,title:"JFK",year:1991,type:"movie",moods:["dramatic","mind-bending","nostalgic"],tags:["oliver-stone","conspiracy","political","editing"],icon:"target"},
+  {id:474,title:"Unforgiven",year:1992,type:"movie",moods:["dramatic","action","nostalgic"],tags:["western","clint-eastwood","revisionist","dark"],icon:"dagger"},
+  {id:475,title:"The Player",year:1992,type:"movie",moods:["fun","dramatic","mind-bending"],tags:["altman","hollywood","satire","meta"],icon:"film"},
+  {id:477,title:"The Piano",year:1993,type:"movie",moods:["dramatic","romantic"],tags:["jane-campion","music","new-zealand","period"],icon:"music"},
+  {id:478,title:"Jurassic Park",year:1993,type:"movie",moods:["action","fun","nostalgic"],tags:["spielberg","dinosaurs","vfx","iconic"],icon:"leaf"},
+  {id:479,title:"Groundhog Day",year:1993,type:"movie",moods:["fun","romantic","mind-bending"],tags:["time-loop","bill-murray","comedy","philosophical"],icon:"clock"},
+  {id:480,title:"Three Colors: Blue",year:1993,type:"movie",moods:["dramatic","tearjerker","chill"],tags:["french","kieslowski","grief","music","gorgeous"],icon:"wave"},
+  {id:481,title:"Three Colors: Red",year:1994,type:"movie",moods:["dramatic","romantic","mind-bending"],tags:["french","kieslowski","connection","beautiful"],icon:"heart"},
+  {id:482,title:"The Lion King",year:1994,type:"movie",moods:["tearjerker","fun","nostalgic"],tags:["animation","disney","coming-of-age","iconic"],icon:"crown"},
+  {id:484,title:"Hoop Dreams",year:1994,type:"movie",moods:["dramatic","tearjerker"],tags:["documentary","basketball","american-dream","epic"],icon:"target"},
+  {id:485,title:"The Usual Suspects",year:1995,type:"movie",moods:["mind-bending","dramatic"],tags:["twist","crime","ensemble","iconic"],icon:"mask"},
+  {id:486,title:"Se7en",year:1995,type:"movie",moods:["scary","dramatic","mind-bending"],tags:["fincher","serial-killer","dark","twist"],icon:"eye"},
+  {id:487,title:"Heat",year:1995,type:"movie",moods:["action","dramatic"],tags:["mann","heist","pacino-deniro","la","epic"],icon:"diamond"},
+  {id:488,title:"Toy Story",year:1995,type:"movie",moods:["fun","chill","nostalgic"],tags:["pixar","animation","friendship","groundbreaking"],icon:"star"},
+  {id:489,title:"Braveheart",year:1995,type:"movie",moods:["action","dramatic","nostalgic"],tags:["scotland","freedom","epic","mel-gibson"],icon:"shield"},
+  {id:490,title:"Dead Man",year:1995,type:"movie",moods:["mind-bending","dramatic","chill"],tags:["jarmusch","western","surreal","black-and-white"],icon:"skull"},
+  {id:493,title:"The English Patient",year:1996,type:"movie",moods:["romantic","dramatic","tearjerker"],tags:["wwii","desert","epic","literary"],icon:"compass"},
+  {id:494,title:"Boogie Nights",year:1997,type:"movie",moods:["dramatic","fun","nuts"],tags:["pta","70s-80s","rise-and-fall","ensemble"],icon:"star"},
+  {id:495,title:"L.A. Confidential",year:1997,type:"movie",moods:["dramatic","action","mind-bending"],tags:["noir","la","50s","corruption","twist"],icon:"eye"},
+  {id:497,title:"Saving Private Ryan",year:1998,type:"movie",moods:["dramatic","action","tearjerker"],tags:["wwii","spielberg","visceral","d-day"],icon:"shield"},
+  {id:498,title:"The Thin Red Line",year:1998,type:"movie",moods:["dramatic","chill","mind-bending"],tags:["malick","wwii","philosophical","poetic"],icon:"leaf"},
+  {id:499,title:"Run Lola Run",year:1998,type:"movie",moods:["action","nuts","fun"],tags:["german","time-loop","kinetic","innovative"],icon:"clock"},
+  {id:500,title:"Being John Malkovich",year:1999,type:"movie",moods:["mind-bending","fun","nuts"],tags:["kaufman","surreal","identity","comedy"],icon:"door"},
+  {id:501,title:"American Beauty",year:1999,type:"movie",moods:["dramatic","mind-bending"],tags:["suburban","midlife-crisis","dark","provocative"],icon:"leaf"},
+  {id:503,title:"Magnolia",year:1999,type:"movie",moods:["dramatic","tearjerker","nuts"],tags:["pta","ensemble","interconnected","epic"],icon:"star"},
+  {id:505,title:"The Sixth Sense",year:1999,type:"movie",moods:["scary","mind-bending","tearjerker"],tags:["shyamalan","ghost","twist","classic"],icon:"eye"},
+  {id:506,title:"All About My Mother",year:1999,type:"movie",moods:["dramatic","tearjerker"],tags:["spanish","almodóvar","motherhood","trans"],icon:"heart"},
+  {id:510,title:"Memento",year:2000,type:"movie",moods:["mind-bending","dramatic"],tags:["nolan","reverse","memory","puzzle"],icon:"spiral"},
+  {id:511,title:"Traffic",year:2000,type:"movie",moods:["dramatic","action"],tags:["soderbergh","drugs","interconnected","political"],icon:"grid"},
+  {id:513,title:"The Lord of the Rings: The Fellowship of the Ring",year:2001,type:"movie",moods:["action","dramatic","nostalgic"],tags:["fantasy","epic","tolkien","jackson"],icon:"mountain"},
+  {id:515,title:"Moulin Rouge!",year:2001,type:"movie",moods:["romantic","fun","nuts"],tags:["musical","baz-luhrmann","paris","visual"],icon:"music"},
+  {id:517,title:"The Pianist",year:2002,type:"movie",moods:["dramatic","tearjerker"],tags:["wwii","polanski","holocaust","music"],icon:"music"},
+  {id:519,title:"The Lord of the Rings: The Two Towers",year:2002,type:"movie",moods:["action","dramatic"],tags:["fantasy","epic","tolkien","battle"],icon:"shield"},
+  {id:520,title:"28 Days Later",year:2002,type:"movie",moods:["scary","action"],tags:["zombie","british","boyle","fast-paced"],icon:"bolt"},
+  {id:521,title:"The Lord of the Rings: The Return of the King",year:2003,type:"movie",moods:["action","dramatic","tearjerker"],tags:["fantasy","epic","tolkien","sweeping"],icon:"crown"},
+  {id:523,title:"Kill Bill: Vol. 1",year:2003,type:"movie",moods:["action","nuts","fun"],tags:["tarantino","revenge","martial-arts","stylish"],icon:"dagger"},
+  {id:524,title:"Finding Nemo",year:2003,type:"movie",moods:["fun","tearjerker","chill"],tags:["pixar","ocean","father-son","adventure"],icon:"wave"},
+  {id:526,title:"Sideways",year:2004,type:"movie",moods:["fun","dramatic","romantic"],tags:["wine","road-trip","midlife","indie"],icon:"coffee"},
+  {id:527,title:"Hotel Rwanda",year:2004,type:"movie",moods:["dramatic","tearjerker"],tags:["genocide","true-story","african","powerful"],icon:"shield"},
+  {id:528,title:"Million Dollar Baby",year:2005,type:"movie",moods:["dramatic","tearjerker","action"],tags:["boxing","eastwood","devastating","mentor"],icon:"bolt"},
+  {id:529,title:"Brokeback Mountain",year:2005,type:"movie",moods:["romantic","dramatic","tearjerker"],tags:["forbidden-love","western","ang-lee","tragic"],icon:"mountain"},
+  {id:531,title:"The Departed",year:2006,type:"movie",moods:["action","dramatic","mind-bending"],tags:["scorsese","crime","boston","double-agent"],icon:"mask"},
+  {id:532,title:"Children of Men",year:2006,type:"movie",moods:["dramatic","action","mind-bending"],tags:["dystopia","cuarón","long-takes","brilliant"],icon:"shield"},
+  {id:533,title:"Little Miss Sunshine",year:2006,type:"movie",moods:["fun","tearjerker","dramatic"],tags:["road-trip","family","indie","heartwarming"],icon:"compass"},
+  {id:536,title:"Babel",year:2006,type:"movie",moods:["dramatic","tearjerker"],tags:["iñárritu","interconnected","global","miscommunication"],icon:"globe"},
+  {id:539,title:"Zodiac",year:2007,type:"movie",moods:["dramatic","scary","mind-bending"],tags:["fincher","serial-killer","obsession","journalism"],icon:"eye"},
+  {id:541,title:"Juno",year:2007,type:"movie",moods:["fun","dramatic","romantic"],tags:["teen","pregnancy","indie","witty"],icon:"music"},
+  {id:545,title:"Slumdog Millionaire",year:2008,type:"movie",moods:["dramatic","romantic","fun"],tags:["indian","rags-to-riches","boyle","vibrant"],icon:"star"},
+  {id:546,title:"The Hurt Locker",year:2008,type:"movie",moods:["dramatic","action"],tags:["iraq","bomb-disposal","tension","bigelow"],icon:"bolt"},
+  {id:548,title:"Inglourious Basterds",year:2009,type:"movie",moods:["action","fun","nuts"],tags:["tarantino","wwii","revisionist","tension"],icon:"dagger"},
+  {id:549,title:"Up",year:2009,type:"movie",moods:["tearjerker","fun","chill"],tags:["pixar","adventure","aging","heartbreaking-opening"],icon:"compass"},
+  {id:550,title:"District 9",year:2009,type:"movie",moods:["action","dramatic","mind-bending"],tags:["sci-fi","south-african","apartheid-allegory"],icon:"shield"},
+  {id:551,title:"A Serious Man",year:2009,type:"movie",moods:["fun","dramatic","mind-bending"],tags:["coen-brothers","jewish","existential","dark-comedy"],icon:"prism"},
+  {id:552,title:"An Education",year:2009,type:"movie",moods:["dramatic","romantic"],tags:["british","coming-of-age","60s","literary"],icon:"book"},
+  {id:553,title:"The Social Network",year:2010,type:"movie",moods:["dramatic","mind-bending"],tags:["fincher","tech","facebook","sorkin","sharp"],icon:"grid"},
+  {id:554,title:"Black Swan",year:2010,type:"movie",moods:["scary","dramatic","mind-bending"],tags:["aronofsky","ballet","obsession","psychological"],icon:"mask"},
+  {id:556,title:"The King's Speech",year:2010,type:"movie",moods:["dramatic","nostalgic"],tags:["british","royal","speech","friendship"],icon:"crown"},
+  {id:557,title:"127 Hours",year:2010,type:"movie",moods:["dramatic","action"],tags:["true-story","boyle","survival","canyon"],icon:"mountain"},
+  {id:558,title:"Toy Story 3",year:2010,type:"movie",moods:["tearjerker","fun","nostalgic"],tags:["pixar","growing-up","friendship","emotional"],icon:"star"},
+  {id:560,title:"The Tree of Life",year:2011,type:"movie",moods:["mind-bending","dramatic","chill"],tags:["malick","cosmic","childhood","experimental"],icon:"tree"},
+  {id:561,title:"Drive",year:2011,type:"movie",moods:["action","dramatic","chill"],tags:["refn","la","stylish","violence","cool"],icon:"moon"},
+  {id:562,title:"The Artist",year:2011,type:"movie",moods:["romantic","fun","nostalgic"],tags:["silent-film","hollywood","black-and-white","charming"],icon:"film"},
+  {id:563,title:"Hugo",year:2011,type:"movie",moods:["fun","chill","nostalgic"],tags:["scorsese","paris","cinema-history","magical"],icon:"clock"},
+  {id:565,title:"Amour",year:2012,type:"movie",moods:["dramatic","tearjerker"],tags:["french","haneke","aging","love","devastating"],icon:"heart"},
+  {id:566,title:"Django Unchained",year:2012,type:"movie",moods:["action","fun","nuts"],tags:["tarantino","western","slavery","revenge"],icon:"dagger"},
+  {id:567,title:"Life of Pi",year:2012,type:"movie",moods:["dramatic","chill","mind-bending"],tags:["ang-lee","ocean","survival","faith"],icon:"wave"},
+  {id:568,title:"12 Years a Slave",year:2013,type:"movie",moods:["dramatic","tearjerker"],tags:["slavery","mcqueen","historical","devastating"],icon:"key"},
+  {id:569,title:"Gravity",year:2013,type:"movie",moods:["action","dramatic"],tags:["space","cuarón","survival","immersive"],icon:"globe"},
+  {id:570,title:"Her",year:2013,type:"movie",moods:["romantic","dramatic","mind-bending"],tags:["spike-jonze","ai","lonely","near-future"],icon:"heart"},
+  {id:572,title:"Boyhood",year:2014,type:"movie",moods:["dramatic","chill","nostalgic"],tags:["linklater","12-years","coming-of-age","life"],icon:"hourglass"},
+  {id:578,title:"Spotlight",year:2015,type:"movie",moods:["dramatic"],tags:["journalism","church","true-story","ensemble"],icon:"pen"},
+  {id:579,title:"The Revenant",year:2015,type:"movie",moods:["dramatic","action"],tags:["iñárritu","survival","nature","beautiful"],icon:"mountain"},
+  {id:583,title:"La La Land",year:2016,type:"movie",moods:["romantic","fun","tearjerker"],tags:["musical","la","jazz","bittersweet","colorful"],icon:"music"},
+  {id:584,title:"Manchester by the Sea",year:2016,type:"movie",moods:["dramatic","tearjerker"],tags:["grief","family","quiet","devastating"],icon:"wave"},
+  {id:586,title:"Lady Bird",year:2017,type:"movie",moods:["dramatic","fun","tearjerker"],tags:["greta-gerwig","coming-of-age","mother-daughter","sacramento"],icon:"feather"},
+  {id:587,title:"Dunkirk",year:2017,type:"movie",moods:["dramatic","action"],tags:["nolan","wwii","triptych","immersive"],icon:"wave"},
+  {id:588,title:"The Shape of Water",year:2017,type:"movie",moods:["romantic","dramatic","scary"],tags:["del-toro","fantasy","cold-war","fairy-tale"],icon:"wave"},
+  {id:590,title:"Three Billboards Outside Ebbing, Missouri",year:2017,type:"movie",moods:["dramatic","fun","nuts"],tags:["mcdonagh","grief","dark-comedy","small-town"],icon:"flame"},
+  {id:593,title:"1917",year:2019,type:"movie",moods:["dramatic","action"],tags:["wwi","one-take","mendes","immersive"],icon:"shield"},
+  {id:595,title:"Once Upon a Time in Hollywood",year:2019,type:"movie",moods:["fun","dramatic","nostalgic"],tags:["tarantino","la","60s","meta"],icon:"film"},
+  {id:597,title:"Nomadland",year:2020,type:"movie",moods:["dramatic","chill"],tags:["chloé-zhao","nomadic","american-west","quiet"],icon:"compass"},
+  {id:598,title:"Promising Young Woman",year:2020,type:"movie",moods:["dramatic","nuts","fun"],tags:["revenge","feminist","dark-comedy","twist"],icon:"diamond"},
+  {id:600,title:"Sound of Metal",year:2019,type:"movie",moods:["dramatic","chill","tearjerker"],tags:["deaf","drumming","acceptance","immersive"],icon:"music"},
+  // ── PRE-CODE & GOLDEN AGE ──
+  {id:601,title:"Sunrise: A Song of Two Humans",year:1927,type:"movie",moods:["romantic","dramatic","nostalgic"],tags:["silent-film","murnau","visual-poetry","classic"],icon:"sun"},
+  {id:602,title:"The Passion of Joan of Arc",year:1928,type:"movie",moods:["dramatic","tearjerker"],tags:["silent-film","french","dreyer","close-ups","spiritual"],icon:"cross"},
+  {id:603,title:"Un Chien Andalou",year:1929,type:"movie",moods:["nuts","mind-bending"],tags:["buñuel","surrealism","short","provocative"],icon:"eye"},
+  {id:604,title:"City Lights",year:1931,type:"movie",moods:["romantic","fun","tearjerker","nostalgic"],tags:["chaplin","silent-film","comedy","classic"],icon:"heart"},
+  {id:605,title:"Freaks",year:1932,type:"movie",moods:["scary","dramatic","nostalgic"],tags:["circus","cult","horror","pre-code"],icon:"mask"},
+  {id:606,title:"Duck Soup",year:1933,type:"movie",moods:["fun","nuts","nostalgic"],tags:["marx-brothers","political-satire","absurd","classic"],icon:"star"},
+  {id:607,title:"It Happened One Night",year:1934,type:"movie",moods:["romantic","fun","nostalgic"],tags:["capra","screwball","road-trip","classic"],icon:"compass"},
+  {id:608,title:"Modern Times",year:1936,type:"movie",moods:["fun","dramatic","nostalgic"],tags:["chaplin","silent-era","industrialization","classic"],icon:"grid"},
+  {id:609,title:"Snow White and the Seven Dwarfs",year:1937,type:"movie",moods:["fun","nostalgic"],tags:["disney","animation","fairy-tale","groundbreaking"],icon:"sparkle"},
+  {id:610,title:"The Rules of the Game",year:1939,type:"movie",moods:["dramatic","fun"],tags:["french","renoir","class","satire","classic"],icon:"mask"},
+  {id:611,title:"Stagecoach",year:1939,type:"movie",moods:["action","dramatic","nostalgic"],tags:["western","john-ford","classic","adventure"],icon:"compass"},
+  {id:612,title:"Rebecca",year:1940,type:"movie",moods:["scary","romantic","dramatic"],tags:["hitchcock","gothic","mystery","du-maurier"],icon:"key"},
+  {id:613,title:"The Philadelphia Story",year:1940,type:"movie",moods:["romantic","fun","nostalgic"],tags:["screwball","hepburn-grant-stewart","witty","classic"],icon:"star"},
+  {id:614,title:"The Great Dictator",year:1940,type:"movie",moods:["fun","dramatic"],tags:["chaplin","satire","political","speech"],icon:"mask"},
+  {id:615,title:"Fantasia",year:1940,type:"movie",moods:["chill","mind-bending","nostalgic"],tags:["disney","animation","classical-music","experimental"],icon:"music"},
+  {id:616,title:"Laura",year:1944,type:"movie",moods:["dramatic","mind-bending","nostalgic"],tags:["noir","mystery","obsession","classic"],icon:"eye"},
+  {id:617,title:"The Best Years of Our Lives",year:1946,type:"movie",moods:["dramatic","tearjerker","nostalgic"],tags:["wwii","returning-home","classic","human"],icon:"heart"},
+  {id:618,title:"Black Narcissus",year:1947,type:"movie",moods:["dramatic","scary"],tags:["british","powell-pressburger","nuns","technicolor"],icon:"mountain"},
+  {id:619,title:"The Red Shoes",year:1948,type:"movie",moods:["dramatic","romantic"],tags:["british","powell-pressburger","ballet","technicolor"],icon:"music"},
+  {id:620,title:"Kind Hearts and Coronets",year:1949,type:"movie",moods:["fun","dramatic","nostalgic"],tags:["british","ealing","dark-comedy","alec-guinness"],icon:"crown"},
+  // ── 50s-60s WORLD CINEMA ──
+  {id:621,title:"Ugetsu",year:1953,type:"movie",moods:["dramatic","mind-bending"],tags:["japanese","mizoguchi","ghost","beautiful"],icon:"moon"},
+  {id:622,title:"The Night of the Hunter",year:1955,type:"movie",moods:["scary","dramatic"],tags:["noir","preacher","children","expressionist"],icon:"moon"},
+  {id:623,title:"Diabolique",year:1955,type:"movie",moods:["scary","mind-bending"],tags:["french","thriller","twist","influential"],icon:"eye"},
+  {id:624,title:"The Searchers",year:1956,type:"movie",moods:["action","dramatic","nostalgic"],tags:["western","john-ford","john-wayne","obsession"],icon:"compass"},
+  {id:625,title:"Paths of Glory",year:1957,type:"movie",moods:["dramatic","action"],tags:["kubrick","wwi","anti-war","courtroom"],icon:"shield"},
+  {id:626,title:"Sweet Smell of Success",year:1957,type:"movie",moods:["dramatic","nuts"],tags:["noir","journalism","new-york","sharp"],icon:"pen"},
+  {id:627,title:"Pickpocket",year:1959,type:"movie",moods:["dramatic","chill"],tags:["french","bresson","crime","minimalist"],icon:"hand"},
+  {id:628,title:"Hiroshima Mon Amour",year:1959,type:"movie",moods:["romantic","dramatic","mind-bending"],tags:["french","resnais","memory","war"],icon:"heart"},
+  {id:629,title:"Eyes Without a Face",year:1960,type:"movie",moods:["scary","dramatic"],tags:["french","horror","poetic","surgical"],icon:"mask"},
+  {id:630,title:"Peeping Tom",year:1960,type:"movie",moods:["scary","mind-bending"],tags:["british","voyeurism","serial-killer","meta"],icon:"camera"},
+  {id:631,title:"L'Avventura",year:1960,type:"movie",moods:["dramatic","mind-bending","chill"],tags:["italian","antonioni","disappearance","existential"],icon:"compass"},
+  {id:632,title:"Jules and Jim",year:1962,type:"movie",moods:["romantic","dramatic","fun"],tags:["french","truffaut","love-triangle","new-wave"],icon:"heart"},
+  {id:633,title:"Cleo from 5 to 7",year:1962,type:"movie",moods:["dramatic","chill"],tags:["french","varda","real-time","feminist"],icon:"clock"},
+  {id:634,title:"The Leopard",year:1963,type:"movie",moods:["dramatic","nostalgic"],tags:["italian","visconti","aristocracy","period","epic"],icon:"crown"},
+  {id:635,title:"Dr. No",year:1962,type:"movie",moods:["action","fun","nostalgic"],tags:["bond","spy","jamaican","connery"],icon:"diamond"},
+  {id:636,title:"The Exterminating Angel",year:1962,type:"movie",moods:["nuts","mind-bending"],tags:["buñuel","surreal","trapped","bourgeoisie"],icon:"door"},
+  {id:637,title:"Dr. Zhivago",year:1965,type:"movie",moods:["romantic","dramatic","nostalgic"],tags:["david-lean","russian-revolution","epic","sweeping"],icon:"mountain"},
+  {id:638,title:"Repulsion",year:1965,type:"movie",moods:["scary","mind-bending"],tags:["polanski","psychological","isolation","apartment"],icon:"door"},
+  {id:640,title:"Blow-Up",year:1966,type:"movie",moods:["mind-bending","dramatic"],tags:["antonioni","photography","swinging-60s","mystery"],icon:"camera"},
+  {id:641,title:"Belle de Jour",year:1967,type:"movie",moods:["dramatic","mind-bending"],tags:["buñuel","french","desire","surreal"],icon:"sun"},
+  {id:642,title:"Cool Hand Luke",year:1967,type:"movie",moods:["dramatic","fun","nostalgic"],tags:["prison","newman","rebel","classic"],icon:"star"},
+  {id:643,title:"The Producers",year:1967,type:"movie",moods:["fun","nuts","nostalgic"],tags:["mel-brooks","theatre","comedy","outrageous"],icon:"star"},
+  {id:644,title:"Night of the Living Dead",year:1968,type:"movie",moods:["scary","nostalgic"],tags:["romero","zombie","low-budget","groundbreaking"],icon:"skull"},
+  {id:645,title:"Once Upon a Time in the West",year:1968,type:"movie",moods:["action","dramatic"],tags:["leone","western","morricone","epic"],icon:"compass"},
+  {id:646,title:"Midnight Cowboy",year:1969,type:"movie",moods:["dramatic","tearjerker"],tags:["new-york","friendship","outsider","new-hollywood"],icon:"moon"},
+  {id:647,title:"Z",year:1969,type:"movie",moods:["dramatic","action"],tags:["french-greek","political-thriller","costa-gavras","sharp"],icon:"bolt"},
+  // ── 70s-80s HIDDEN GEMS ──
+  {id:648,title:"The Discreet Charm of the Bourgeoisie",year:1972,type:"movie",moods:["fun","nuts","mind-bending"],tags:["buñuel","surreal","satire","french"],icon:"coffee"},
+  {id:649,title:"Cabaret",year:1972,type:"movie",moods:["dramatic","fun"],tags:["musical","berlin","weimar","liza-minnelli"],icon:"music"},
+  {id:651,title:"Don't Look Now",year:1973,type:"movie",moods:["scary","dramatic","mind-bending"],tags:["nicolas-roeg","venice","grief","premonition"],icon:"eye"},
+  {id:652,title:"The Spirit of the Beehive",year:1973,type:"movie",moods:["dramatic","chill"],tags:["spanish","childhood","post-war","gentle"],icon:"eye"},
+  {id:653,title:"Scenes from a Marriage",year:1973,type:"movie",moods:["dramatic","tearjerker"],tags:["bergman","marriage","raw","intimate"],icon:"heart"},
+  {id:654,title:"The Texas Chain Saw Massacre",year:1974,type:"movie",moods:["scary","nuts"],tags:["horror","slasher","low-budget","visceral"],icon:"skull"},
+  {id:656,title:"Nashville",year:1975,type:"movie",moods:["dramatic","fun"],tags:["altman","ensemble","music","america"],icon:"music"},
+  {id:659,title:"Halloween",year:1978,type:"movie",moods:["scary","nostalgic"],tags:["carpenter","slasher","masked-killer","iconic"],icon:"moon"},
+  {id:660,title:"Dawn of the Dead",year:1978,type:"movie",moods:["scary","nuts"],tags:["romero","zombie","consumerism-satire","gory"],icon:"skull"},
+  {id:661,title:"Kramer vs. Kramer",year:1979,type:"movie",moods:["dramatic","tearjerker"],tags:["divorce","custody","hoffman-streep","emotional"],icon:"heart"},
+  {id:664,title:"Fanny and Alexander",year:1982,type:"movie",moods:["dramatic","fun","nostalgic"],tags:["bergman","family","childhood","magical"],icon:"sparkle"},
+  {id:665,title:"A Christmas Story",year:1983,type:"movie",moods:["fun","nostalgic"],tags:["christmas","childhood","comedy","classic"],icon:"star"},
+  {id:666,title:"Once Upon a Time in America",year:1984,type:"movie",moods:["dramatic","action","nostalgic"],tags:["leone","gangster","epic","memory"],icon:"hourglass"},
+  {id:668,title:"Brazil",year:1985,type:"movie",moods:["nuts","mind-bending","fun"],tags:["terry-gilliam","dystopia","satire","bureaucracy"],icon:"grid"},
+  {id:670,title:"The Fly",year:1986,type:"movie",moods:["scary","dramatic"],tags:["cronenberg","body-horror","tragic","jeff-goldblum"],icon:"spiral"},
+  {id:671,title:"Withnail and I",year:1987,type:"movie",moods:["fun","dramatic"],tags:["british","cult","drinking","60s","quotable"],icon:"coffee"},
+  {id:672,title:"The Last Emperor",year:1987,type:"movie",moods:["dramatic","nostalgic"],tags:["bertolucci","china","biographical","epic"],icon:"crown"},
+  {id:675,title:"The Thin Blue Line",year:1988,type:"movie",moods:["dramatic","mind-bending"],tags:["documentary","true-crime","errol-morris","influential"],icon:"eye"},
+  // ── 1001 MOVIES BATCH 2 ──
+  {id:676,title:"The Apartment",year:1960,type:"movie",moods:["romantic","dramatic","fun"],tags:["billy-wilder","office","new-york","classic"],icon:"key"},
+  {id:677,title:"West Side Story",year:1961,type:"movie",moods:["romantic","dramatic","nostalgic"],tags:["musical","romeo-juliet","dance","classic"],icon:"music"},
+  {id:678,title:"Breakfast at Tiffany's",year:1961,type:"movie",moods:["romantic","fun","nostalgic"],tags:["audrey-hepburn","new-york","classic","stylish"],icon:"diamond"},
+  {id:679,title:"The Man Who Shot Liberty Valance",year:1962,type:"movie",moods:["dramatic","action","nostalgic"],tags:["western","john-ford","classic","mythmaking"],icon:"shield"},
+  {id:680,title:"What Ever Happened to Baby Jane?",year:1962,type:"movie",moods:["scary","dramatic","nuts"],tags:["camp","sisters","psychological","bette-davis"],icon:"mask"},
+  {id:682,title:"The Servant",year:1963,type:"movie",moods:["dramatic","mind-bending"],tags:["british","losey","class","power-dynamics"],icon:"key"},
+  {id:683,title:"Goldfinger",year:1964,type:"movie",moods:["action","fun","nostalgic"],tags:["bond","spy","connery","iconic"],icon:"diamond"},
+  {id:684,title:"A Fistful of Dollars",year:1964,type:"movie",moods:["action","fun"],tags:["western","leone","eastwood","spaghetti"],icon:"target"},
+  {id:685,title:"The Sound of Music",year:1965,type:"movie",moods:["fun","romantic","nostalgic"],tags:["musical","classic","austria","family"],icon:"music"},
+  {id:686,title:"Who's Afraid of Virginia Woolf?",year:1966,type:"movie",moods:["dramatic","nuts"],tags:["marriage","taylor-burton","theatre","intense"],icon:"flame"},
+  {id:687,title:"Closely Watched Trains",year:1966,type:"movie",moods:["fun","dramatic"],tags:["czech","new-wave","wwii","coming-of-age"],icon:"compass"},
+  {id:689,title:"Point Blank",year:1967,type:"movie",moods:["action","mind-bending","nuts"],tags:["noir","revenge","lee-marvin","experimental"],icon:"target"},
+  {id:690,title:"In the Heat of the Night",year:1967,type:"movie",moods:["dramatic"],tags:["racial-tension","mystery","sidney-poitier","south"],icon:"shield"},
+  {id:691,title:"Planet of the Apes",year:1968,type:"movie",moods:["mind-bending","action","nostalgic"],tags:["sci-fi","twist","dystopia","iconic"],icon:"prism"},
+  {id:692,title:"If....",year:1968,type:"movie",moods:["dramatic","nuts"],tags:["british","rebellion","school","lindsay-anderson"],icon:"bolt"},
+  {id:695,title:"Five Easy Pieces",year:1970,type:"movie",moods:["dramatic"],tags:["new-hollywood","nicholson","class","rebellion"],icon:"music"},
+  {id:696,title:"Willy Wonka & the Chocolate Factory",year:1971,type:"movie",moods:["fun","nuts","nostalgic"],tags:["fantasy","gene-wilder","childhood","dark"],icon:"sparkle"},
+  {id:697,title:"The Last Picture Show",year:1971,type:"movie",moods:["dramatic","nostalgic","tearjerker"],tags:["small-town","black-and-white","coming-of-age","texas"],icon:"film"},
+  {id:698,title:"A Woman Under the Influence",year:1974,type:"movie",moods:["dramatic","tearjerker"],tags:["cassavetes","mental-health","marriage","raw"],icon:"heart"},
+  {id:699,title:"The Rocky Horror Picture Show",year:1975,type:"movie",moods:["fun","nuts","nostalgic"],tags:["musical","cult","camp","midnight-movie"],icon:"music"},
+  {id:700,title:"Jeanne Dielman",year:1975,type:"movie",moods:["dramatic","mind-bending","chill"],tags:["belgian","feminist","routine","chantal-akerman"],icon:"clock"},
+  {id:701,title:"The Man Who Fell to Earth",year:1976,type:"movie",moods:["mind-bending","dramatic"],tags:["nicolas-roeg","bowie","alien","surreal"],icon:"star"},
+  {id:704,title:"Life of Brian",year:1979,type:"movie",moods:["fun","nuts","nostalgic"],tags:["monty-python","satire","religious","quotable"],icon:"star"},
+  {id:706,title:"Airplane!",year:1980,type:"movie",moods:["fun","nuts","nostalgic"],tags:["spoof","slapstick","quotable","classic-comedy"],icon:"plane"},
+  {id:707,title:"The Evil Dead",year:1981,type:"movie",moods:["scary","nuts","fun"],tags:["raimi","cabin","cult","low-budget","horror-comedy"],icon:"skull"},
+  {id:708,title:"An Officer and a Gentleman",year:1982,type:"movie",moods:["romantic","dramatic"],tags:["military","love-story","80s","gere"],icon:"shield"},
+  {id:709,title:"The King of Comedy",year:1982,type:"movie",moods:["dramatic","nuts"],tags:["scorsese","de-niro","obsession","fame","prophetic"],icon:"mask"},
+  {id:710,title:"A Nightmare on Elm Street",year:1984,type:"movie",moods:["scary","nuts","nostalgic"],tags:["horror","dreams","freddy","wes-craven"],icon:"skull"},
+  {id:711,title:"Ghostbusters",year:1984,type:"movie",moods:["fun","action","nostalgic"],tags:["comedy","supernatural","80s","iconic"],icon:"bolt"},
+  {id:712,title:"Beverly Hills Cop",year:1984,type:"movie",moods:["fun","action","nostalgic"],tags:["eddie-murphy","comedy","80s","la"],icon:"star"},
+  {id:713,title:"The Color Purple",year:1985,type:"movie",moods:["dramatic","tearjerker"],tags:["spielberg","whoopi","literary","powerful"],icon:"heart"},
+  {id:714,title:"Shoah",year:1985,type:"movie",moods:["dramatic","tearjerker"],tags:["documentary","holocaust","epic-length","testimony"],icon:"eye"},
+  {id:717,title:"The Naked Gun",year:1988,type:"movie",moods:["fun","nuts","nostalgic"],tags:["spoof","leslie-nielsen","slapstick","quotable"],icon:"shield"},
+  {id:718,title:"Heathers",year:1988,type:"movie",moods:["fun","nuts","scary"],tags:["teen","dark-comedy","80s","cult","winona-ryder"],icon:"skull"},
+  {id:720,title:"Drugstore Cowboy",year:1989,type:"movie",moods:["dramatic","chill"],tags:["gus-van-sant","drugs","indie","portland"],icon:"compass"},
+  {id:721,title:"Henry: Portrait of a Serial Killer",year:1986,type:"movie",moods:["scary","nuts"],tags:["horror","serial-killer","raw","disturbing"],icon:"skull"},
+  {id:722,title:"Miller's Crossing",year:1990,type:"movie",moods:["dramatic","action"],tags:["coen-brothers","gangster","prohibition","stylish"],icon:"crown"},
+  {id:723,title:"Total Recall",year:1990,type:"movie",moods:["action","mind-bending","nuts"],tags:["sci-fi","verhoeven","mars","identity"],icon:"bolt"},
+  {id:724,title:"Boyz n the Hood",year:1991,type:"movie",moods:["dramatic","tearjerker"],tags:["la","coming-of-age","singleton","powerful"],icon:"flame"},
+  {id:725,title:"Delicatessen",year:1991,type:"movie",moods:["fun","nuts","scary"],tags:["french","jeunet","dystopia","dark-comedy","quirky"],icon:"scissors"},
+  {id:726,title:"Barton Fink",year:1991,type:"movie",moods:["dramatic","mind-bending","nuts"],tags:["coen-brothers","writer","hollywood","surreal"],icon:"pen"},
+  {id:727,title:"The Crying Game",year:1992,type:"movie",moods:["dramatic","romantic","mind-bending"],tags:["british","ira","twist","identity"],icon:"heart"},
+  {id:728,title:"Glengarry Glen Ross",year:1992,type:"movie",moods:["dramatic","nuts"],tags:["mamet","sales","dialogue","ensemble"],icon:"pen"},
+  {id:729,title:"The Age of Innocence",year:1993,type:"movie",moods:["romantic","dramatic"],tags:["scorsese","period","new-york","restrained"],icon:"heart"},
+  {id:730,title:"Short Cuts",year:1993,type:"movie",moods:["dramatic","fun"],tags:["altman","ensemble","la","interconnected"],icon:"grid"},
+  {id:731,title:"Natural Born Killers",year:1994,type:"movie",moods:["nuts","scary","action"],tags:["oliver-stone","media-satire","violent","provocative"],icon:"bolt"},
+  {id:732,title:"Clerks",year:1994,type:"movie",moods:["fun","chill"],tags:["kevin-smith","slacker","indie","low-budget","dialogue"],icon:"coffee"},
+  {id:733,title:"The Adventures of Priscilla, Queen of the Desert",year:1994,type:"movie",moods:["fun","dramatic"],tags:["australian","drag","road-trip","fabulous"],icon:"star"},
+  {id:734,title:"Clueless",year:1995,type:"movie",moods:["fun","romantic","nostalgic"],tags:["teen","90s","comedy","literary","iconic"],icon:"diamond"},
+  {id:735,title:"Casino",year:1995,type:"movie",moods:["dramatic","action","nuts"],tags:["scorsese","las-vegas","mafia","excess"],icon:"diamond"},
+  {id:736,title:"Scream",year:1996,type:"movie",moods:["scary","fun","nostalgic"],tags:["wes-craven","meta","slasher","90s"],icon:"skull"},
+  {id:737,title:"Sling Blade",year:1996,type:"movie",moods:["dramatic","tearjerker"],tags:["southern","billy-bob-thornton","quiet","indie"],icon:"heart"},
+  {id:738,title:"Gattaca",year:1997,type:"movie",moods:["mind-bending","dramatic"],tags:["sci-fi","genetic","dystopia","elegant"],icon:"hex"},
+  {id:739,title:"Starship Troopers",year:1997,type:"movie",moods:["action","fun","nuts"],tags:["verhoeven","satire","sci-fi","military"],icon:"shield"},
+  {id:740,title:"Happiness",year:1998,type:"movie",moods:["dramatic","nuts"],tags:["todd-solondz","dark-comedy","suburban","provocative"],icon:"mask"},
+  {id:742,title:"Pi",year:1998,type:"movie",moods:["mind-bending","scary","nuts"],tags:["aronofsky","math","paranoia","low-budget","debut"],icon:"spiral"},
+  {id:743,title:"Rushmore",year:1998,type:"movie",moods:["fun","dramatic"],tags:["wes-anderson","school","quirky","bill-murray"],icon:"book"},
+  {id:744,title:"Office Space",year:1999,type:"movie",moods:["fun","chill"],tags:["workplace","satire","90s","cult","relatable"],icon:"grid"},
+  {id:745,title:"The Blair Witch Project",year:1999,type:"movie",moods:["scary","nuts"],tags:["found-footage","horror","low-budget","influential"],icon:"camera"},
+  {id:746,title:"Eyes Wide Shut",year:1999,type:"movie",moods:["dramatic","scary","mind-bending"],tags:["kubrick","marriage","erotic","mystery"],icon:"mask"},
+  {id:747,title:"The Virgin Suicides",year:1999,type:"movie",moods:["dramatic","chill","tearjerker"],tags:["sofia-coppola","teen","suburban","dreamy"],icon:"leaf"},
+  {id:749,title:"O Brother, Where Art Thou?",year:2000,type:"movie",moods:["fun","dramatic"],tags:["coen-brothers","odyssey","music","depression-era"],icon:"music"},
+  {id:753,title:"The Others",year:2001,type:"movie",moods:["scary","mind-bending"],tags:["gothic","twist","kidman","atmospheric"],icon:"door"},
+  {id:755,title:"Gangs of New York",year:2002,type:"movie",moods:["dramatic","action"],tags:["scorsese","historical","new-york","epic"],icon:"dagger"},
+  {id:756,title:"Adaptation",year:2002,type:"movie",moods:["fun","mind-bending","dramatic"],tags:["kaufman","meta","writing","cage"],icon:"pen"},
+  {id:759,title:"The Motorcycle Diaries",year:2004,type:"movie",moods:["dramatic","chill"],tags:["biographical","che-guevara","south-america","road-trip"],icon:"compass"},
+  {id:760,title:"Downfall",year:2004,type:"movie",moods:["dramatic","scary"],tags:["german","wwii","hitler","bunker","intense"],icon:"flame"},
+  {id:761,title:"Crash",year:2004,type:"movie",moods:["dramatic"],tags:["la","interconnected","racial-tension","ensemble"],icon:"grid"},
+  {id:762,title:"Grizzly Man",year:2005,type:"movie",moods:["dramatic","nuts","mind-bending"],tags:["documentary","herzog","nature","obsession"],icon:"mountain"},
+  {id:763,title:"Tsotsi",year:2005,type:"movie",moods:["dramatic","tearjerker"],tags:["south-african","crime","redemption","baby"],icon:"heart"},
+  {id:764,title:"A History of Violence",year:2005,type:"movie",moods:["action","dramatic","mind-bending"],tags:["cronenberg","identity","small-town","brutal"],icon:"dagger"},
+  {id:765,title:"Borat",year:2006,type:"movie",moods:["fun","nuts"],tags:["mockumentary","sacha-baron-cohen","cringe","america"],icon:"star"},
+  {id:766,title:"The Queen",year:2006,type:"movie",moods:["dramatic"],tags:["british","royal","diana","mirren"],icon:"crown"},
+  {id:768,title:"Into the Wild",year:2007,type:"movie",moods:["dramatic","chill"],tags:["nature","freedom","biographical","tragic"],icon:"mountain"},
+  {id:772,title:"Hunger",year:2008,type:"movie",moods:["dramatic"],tags:["steve-mcqueen","ira","prison","visceral","debut"],icon:"flame"},
+  {id:777,title:"Kick-Ass",year:2010,type:"movie",moods:["action","fun","nuts"],tags:["superhero","teen","violent","dark-comedy"],icon:"bolt"},
+  {id:778,title:"Winter's Bone",year:2010,type:"movie",moods:["dramatic","scary"],tags:["ozarks","jennifer-lawrence","gritty","poverty"],icon:"mountain"},
+  {id:779,title:"Melancholia",year:2011,type:"movie",moods:["dramatic","mind-bending","tearjerker"],tags:["lars-von-trier","depression","apocalypse","gorgeous"],icon:"moon"},
+  {id:780,title:"Shame",year:2011,type:"movie",moods:["dramatic"],tags:["steve-mcqueen","addiction","new-york","raw"],icon:"door"},
+  {id:783,title:"Beasts of the Southern Wild",year:2012,type:"movie",moods:["dramatic","chill"],tags:["magical-realism","child","louisiana","indie"],icon:"leaf"},
+  {id:787,title:"Blue Is the Warmest Colour",year:2013,type:"movie",moods:["romantic","dramatic"],tags:["french","coming-of-age","intimate","palme-dor"],icon:"heart"},
+  {id:788,title:"Force Majeure",year:2014,type:"movie",moods:["dramatic","fun"],tags:["swedish","avalanche","marriage","cringe"],icon:"mountain"},
+  {id:789,title:"Ex Machina",year:2014,type:"movie",moods:["mind-bending","scary"],tags:["ai","sci-fi","alex-garland","tension"],icon:"hex"},
+  {id:791,title:"Son of Saul",year:2015,type:"movie",moods:["dramatic","scary"],tags:["hungarian","holocaust","claustrophobic","devastating"],icon:"flame"},
+  {id:795,title:"I, Daniel Blake",year:2016,type:"movie",moods:["dramatic","tearjerker"],tags:["british","ken-loach","poverty","social-realism"],icon:"heart"},
+  {id:799,title:"The Favourite",year:2018,type:"movie",moods:["fun","dramatic","nuts"],tags:["lanthimos","period","power","dark-comedy"],icon:"crown"},
+  {id:800,title:"Cold War",year:2018,type:"movie",moods:["romantic","dramatic","tearjerker"],tags:["polish","black-and-white","music","sweeping"],icon:"heart"},
+  // ── EXPANSION BATCH 3: 200 MORE TITLES ──
+  // 90s gems
+  {id:802,title:"Leon: The Professional",year:1994,type:"movie",moods:["action","dramatic","tearjerker"],tags:["french","hitman","mentor","luc-besson"],icon:"target"},
+  {id:803,title:"Twelve Monkeys",year:1995,type:"movie",moods:["mind-bending","action"],tags:["terry-gilliam","time-travel","virus","paranoia"],icon:"clock"},
+  {id:805,title:"Safe",year:1995,type:"movie",moods:["dramatic","scary","mind-bending"],tags:["todd-haynes","illness","suburban","slow-burn"],icon:"door"},
+  {id:807,title:"Crumb",year:1994,type:"movie",moods:["dramatic","nuts"],tags:["documentary","art","family","obsession"],icon:"pen"},
+  {id:808,title:"Strange Days",year:1995,type:"movie",moods:["action","mind-bending","nuts"],tags:["sci-fi","bigelow","millennium","cyberpunk"],icon:"eye"},
+  {id:809,title:"The Ice Storm",year:1997,type:"movie",moods:["dramatic","tearjerker"],tags:["ang-lee","70s","suburban","family"],icon:"mountain"},
+  {id:811,title:"Taste of Cherry",year:1997,type:"movie",moods:["dramatic","chill","mind-bending"],tags:["iranian","kiarostami","existential","minimalist"],icon:"sun"},
+  {id:812,title:"The Sweet Hereafter",year:1997,type:"movie",moods:["dramatic","tearjerker"],tags:["canadian","atom-egoyan","grief","bus-accident"],icon:"mountain"},
+  {id:813,title:"Dark City",year:1998,type:"movie",moods:["mind-bending","action","scary"],tags:["sci-fi","noir","identity","cult"],icon:"moon"},
+  {id:815,title:"Lock, Stock and Two Smoking Barrels",year:1998,type:"movie",moods:["fun","action","nuts"],tags:["british","crime","guy-ritchie","ensemble"],icon:"diamond"},
+  {id:816,title:"Autumn Sonata",year:1978,type:"movie",moods:["dramatic","tearjerker"],tags:["bergman","mother-daughter","music","raw"],icon:"music"},
+  // 2000s overlooked
+  {id:818,title:"The Man Who Wasn't There",year:2001,type:"movie",moods:["dramatic","mind-bending"],tags:["coen-brothers","noir","black-and-white","existential"],icon:"eye"},
+  {id:820,title:"Monsoon Wedding",year:2001,type:"movie",moods:["fun","dramatic","romantic"],tags:["indian","mira-nair","family","wedding"],icon:"heart"},
+  {id:821,title:"Catch Me If You Can",year:2002,type:"movie",moods:["fun","dramatic"],tags:["spielberg","con-artist","true-story","charming"],icon:"plane"},
+  {id:822,title:"Infernal Affairs",year:2002,type:"movie",moods:["dramatic","action","mind-bending"],tags:["hong-kong","double-agent","cat-and-mouse","thriller"],icon:"mask"},
+  {id:825,title:"Good Bye, Lenin!",year:2003,type:"movie",moods:["fun","dramatic","tearjerker"],tags:["german","reunification","mother-son","bittersweet"],icon:"heart"},
+  {id:826,title:"House of Flying Daggers",year:2004,type:"movie",moods:["action","romantic"],tags:["chinese","zhang-yimou","wuxia","gorgeous"],icon:"leaf"},
+  {id:827,title:"The Incredibles",year:2004,type:"movie",moods:["action","fun","chill"],tags:["pixar","superhero","family","clever"],icon:"bolt"},
+  {id:828,title:"Kung Fu Hustle",year:2004,type:"movie",moods:["fun","action","nuts"],tags:["hong-kong","stephen-chow","comedy","martial-arts"],icon:"bolt"},
+  {id:829,title:"Capote",year:2005,type:"movie",moods:["dramatic"],tags:["biographical","writing","philip-seymour-hoffman","true-crime"],icon:"pen"},
+  {id:831,title:"Letters from Iwo Jima",year:2006,type:"movie",moods:["dramatic","tearjerker"],tags:["eastwood","wwii","japanese-perspective","war"],icon:"shield"},
+  {id:832,title:"The Assassination of Jesse James",year:2007,type:"movie",moods:["dramatic","chill"],tags:["western","brad-pitt","atmospheric","beautiful"],icon:"compass"},
+  {id:833,title:"Once",year:2007,type:"movie",moods:["romantic","chill","tearjerker"],tags:["irish","music","low-budget","genuine"],icon:"music"},
+  {id:834,title:"Coraline",year:2009,type:"movie",moods:["scary","fun","chill"],tags:["animation","stop-motion","dark","neil-gaiman"],icon:"door"},
+  {id:835,title:"Moon",year:2009,type:"movie",moods:["mind-bending","dramatic","chill"],tags:["sci-fi","sam-rockwell","isolation","identity"],icon:"moon"},
+  {id:836,title:"Fish Tank",year:2009,type:"movie",moods:["dramatic"],tags:["british","andrea-arnold","teen","raw","social-realism"],icon:"flame"},
+  {id:837,title:"A Single Man",year:2009,type:"movie",moods:["dramatic","tearjerker"],tags:["tom-ford","grief","stylish","60s"],icon:"heart"},
+  // 2010s depth
+  {id:839,title:"Blue Valentine",year:2010,type:"movie",moods:["dramatic","romantic","tearjerker"],tags:["love","decay","raw","gosling-williams"],icon:"heart"},
+  {id:840,title:"Certified Copy",year:2010,type:"movie",moods:["romantic","mind-bending","dramatic"],tags:["kiarostami","tuscan","identity","conversation"],icon:"prism"},
+  {id:841,title:"Tangled",year:2010,type:"movie",moods:["fun","romantic","nostalgic"],tags:["disney","animation","rapunzel","charming"],icon:"sparkle"},
+  {id:842,title:"The Turin Horse",year:2011,type:"movie",moods:["dramatic","chill"],tags:["hungarian","bela-tarr","minimalist","bleak"],icon:"wind"},
+  {id:843,title:"Take Shelter",year:2011,type:"movie",moods:["dramatic","scary","mind-bending"],tags:["michael-shannon","paranoia","mental-health","storms"],icon:"mountain"},
+  {id:844,title:"Moneyball",year:2011,type:"movie",moods:["dramatic","fun"],tags:["baseball","brad-pitt","true-story","analytics"],icon:"target"},
+  {id:845,title:"Wreck-It Ralph",year:2012,type:"movie",moods:["fun","chill"],tags:["disney","animation","video-games","identity"],icon:"grid"},
+  {id:848,title:"Stories We Tell",year:2012,type:"movie",moods:["dramatic","tearjerker","mind-bending"],tags:["documentary","sarah-polley","family","memory"],icon:"camera"},
+  {id:849,title:"The Past",year:2013,type:"movie",moods:["dramatic"],tags:["french","farhadi","marriage","secrets","layered"],icon:"key"},
+  {id:850,title:"Nebraska",year:2013,type:"movie",moods:["dramatic","fun","chill"],tags:["alexander-payne","father-son","black-and-white","midwest"],icon:"compass"},
+  {id:851,title:"Prisoners",year:2013,type:"movie",moods:["dramatic","scary","mind-bending"],tags:["villeneuve","missing-child","thriller","dark"],icon:"eye"},
+  {id:852,title:"The Tale of the Princess Kaguya",year:2013,type:"movie",moods:["tearjerker","chill"],tags:["anime","ghibli","watercolor","folk-tale"],icon:"leaf"},
+  {id:853,title:"The Lego Movie",year:2014,type:"movie",moods:["fun","nuts"],tags:["animation","meta","creative","surprisingly-deep"],icon:"sparkle"},
+  {id:854,title:"Nightcrawler",year:2014,type:"movie",moods:["dramatic","scary","nuts"],tags:["jake-gyllenhaal","la","media","sociopath"],icon:"camera"},
+  {id:855,title:"Two Days, One Night",year:2014,type:"movie",moods:["dramatic","tearjerker"],tags:["belgian","dardennes","cotillard","working-class"],icon:"sun"},
+  {id:856,title:"Mommy",year:2014,type:"movie",moods:["dramatic","tearjerker"],tags:["xavier-dolan","mother-son","adhd","aspect-ratio"],icon:"heart"},
+  {id:857,title:"Wild Tales",year:2014,type:"movie",moods:["fun","nuts","dramatic"],tags:["argentinian","anthology","revenge","dark-comedy"],icon:"bolt"},
+  {id:859,title:"Dope",year:2015,type:"movie",moods:["fun","dramatic"],tags:["teen","geek","drugs","90s-culture","energetic"],icon:"music"},
+  {id:860,title:"Mustang",year:2015,type:"movie",moods:["dramatic","tearjerker"],tags:["turkish","sisters","patriarchy","coming-of-age"],icon:"flame"},
+  {id:861,title:"Anomalisa",year:2015,type:"movie",moods:["dramatic","mind-bending","tearjerker"],tags:["kaufman","stop-motion","loneliness","unique"],icon:"mask"},
+  {id:864,title:"Zootopia",year:2016,type:"movie",moods:["fun","dramatic"],tags:["disney","animation","allegory","buddy"],icon:"shield"},
+  {id:866,title:"Hell or High Water",year:2016,type:"movie",moods:["action","dramatic"],tags:["neo-western","brothers","texas","heist"],icon:"compass"},
+  {id:867,title:"The Killing of a Sacred Deer",year:2017,type:"movie",moods:["scary","mind-bending","nuts"],tags:["lanthimos","greek-tragedy","suburban","disturbing"],icon:"eye"},
+  {id:869,title:"A Ghost Story",year:2017,type:"movie",moods:["chill","tearjerker","mind-bending"],tags:["a24","time","grief","bedsheet","existential"],icon:"hourglass"},
+  {id:871,title:"Raw",year:2016,type:"movie",moods:["scary","nuts"],tags:["french","body-horror","coming-of-age","veterinary"],icon:"flame"},
+  {id:872,title:"Eighth Grade",year:2018,type:"movie",moods:["dramatic","fun","tearjerker"],tags:["teen","social-media","anxiety","authentic"],icon:"camera"},
+  {id:874,title:"Mission: Impossible - Fallout",year:2018,type:"movie",moods:["action","fun"],tags:["tom-cruise","stunts","thrilling","relentless"],icon:"bolt"},
+  {id:878,title:"Jojo Rabbit",year:2019,type:"movie",moods:["fun","tearjerker","dramatic"],tags:["waititi","wwii","satire","heartwarming"],icon:"heart"},
+  {id:880,title:"Beanpole",year:2019,type:"movie",moods:["dramatic","tearjerker"],tags:["russian","wwii","aftermath","women","bleak"],icon:"leaf"},
+  {id:882,title:"Another Round",year:2020,type:"movie",moods:["fun","dramatic","tearjerker"],tags:["danish","mads-mikkelsen","alcohol","experiment"],icon:"coffee"},
+  {id:883,title:"First Cow",year:2019,type:"movie",moods:["chill","dramatic"],tags:["kelly-reichardt","frontier","friendship","gentle"],icon:"leaf"},
+  {id:885,title:"Never Rarely Sometimes Always",year:2020,type:"movie",moods:["dramatic","tearjerker"],tags:["teen","abortion","quiet","raw"],icon:"heart"},
+  {id:887,title:"Judas and the Black Messiah",year:2021,type:"movie",moods:["dramatic"],tags:["true-story","political","black-panthers","powerful"],icon:"flame"},
+  {id:888,title:"The Power of the Dog",year:2021,type:"movie",moods:["dramatic","mind-bending"],tags:["jane-campion","western","repression","slow-burn"],icon:"mountain"},
+  {id:889,title:"Drive My Car",year:2021,type:"movie",moods:["dramatic","chill","tearjerker"],tags:["japanese","hamaguchi","chekhov","grief","long"],icon:"compass"},
+  {id:892,title:"Flee",year:2021,type:"movie",moods:["dramatic","tearjerker"],tags:["danish","animation","refugee","true-story"],icon:"compass"},
+  {id:893,title:"Licorice Pizza",year:2021,type:"movie",moods:["romantic","fun","nostalgic"],tags:["pta","70s","la","coming-of-age"],icon:"music"},
+  {id:894,title:"The Banshees of Inisherin",year:2022,type:"movie",moods:["dramatic","fun","tearjerker"],tags:["irish","mcdonagh","friendship","dark-comedy"],icon:"mountain"},
+  {id:895,title:"Decision to Leave",year:2022,type:"movie",moods:["romantic","mind-bending","dramatic"],tags:["korean","park-chan-wook","noir","elegant"],icon:"mountain"},
+  {id:896,title:"All Quiet on the Western Front",year:2022,type:"movie",moods:["dramatic","action","tearjerker"],tags:["german","wwi","anti-war","visceral"],icon:"shield"},
+  {id:897,title:"Triangle of Sadness",year:2022,type:"movie",moods:["fun","nuts"],tags:["swedish","östlund","satire","class","yacht"],icon:"wave"},
+  {id:898,title:"Tár",year:2022,type:"movie",moods:["dramatic","mind-bending"],tags:["cate-blanchett","music","power","downfall"],icon:"music"},
+  {id:901,title:"The Fabelmans",year:2022,type:"movie",moods:["dramatic","nostalgic","tearjerker"],tags:["spielberg","cinema","autobiography","family"],icon:"film"},
+  {id:903,title:"Nope",year:2022,type:"movie",moods:["scary","mind-bending","action"],tags:["peele","spectacle","ufo","hollywood"],icon:"eye"},
+  {id:904,title:"EO",year:2022,type:"movie",moods:["dramatic","chill"],tags:["polish","donkey","wordless","beautiful"],icon:"compass"},
+  {id:905,title:"Close",year:2022,type:"movie",moods:["dramatic","tearjerker"],tags:["belgian","friendship","youth","devastating"],icon:"heart"},
+  {id:906,title:"Oppenheimer",year:2023,type:"movie",moods:["dramatic","mind-bending"],tags:["nolan","biographical","atomic","epic"],icon:"bolt"},
+  {id:908,title:"Killers of the Flower Moon",year:2023,type:"movie",moods:["dramatic"],tags:["scorsese","osage","true-story","epic","historical"],icon:"flame"},
+  {id:909,title:"The Zone of Interest",year:2023,type:"movie",moods:["dramatic","scary"],tags:["holocaust","glazer","sound-design","chilling"],icon:"door"},
+  {id:910,title:"Anatomy of a Fall",year:2023,type:"movie",moods:["dramatic","mind-bending"],tags:["french","courtroom","marriage","ambiguous"],icon:"mountain"},
+  {id:911,title:"Poor Things",year:2023,type:"movie",moods:["fun","nuts","romantic"],tags:["lanthimos","victorian","sci-fi","emma-stone"],icon:"sparkle"},
+  {id:912,title:"The Holdovers",year:2023,type:"movie",moods:["dramatic","fun","tearjerker"],tags:["paul-giamatti","christmas","boarding-school","warm"],icon:"star"},
+  {id:913,title:"American Fiction",year:2023,type:"movie",moods:["fun","dramatic"],tags:["satire","literary","race","smart"],icon:"book"},
+  {id:914,title:"Fallen Leaves",year:2023,type:"movie",moods:["romantic","chill","fun"],tags:["finnish","kaurismäki","deadpan","gentle"],icon:"leaf"},
+  {id:916,title:"May December",year:2023,type:"movie",moods:["dramatic","mind-bending"],tags:["todd-haynes","meta","uncomfortable","julianne-moore"],icon:"mask"},
+  // World cinema gems
+  {id:918,title:"The Color of Pomegranates",year:1969,type:"movie",moods:["mind-bending","chill"],tags:["armenian","parajanov","visual-poetry","surreal"],icon:"sparkle"},
+  {id:919,title:"Celine and Julie Go Boating",year:1974,type:"movie",moods:["fun","mind-bending"],tags:["french","rivette","playful","surreal","feminist"],icon:"sparkle"},
+  {id:920,title:"Ali: Fear Eats the Soul",year:1974,type:"movie",moods:["dramatic","romantic","tearjerker"],tags:["german","fassbinder","immigrant","love","prejudice"],icon:"heart"},
+  {id:921,title:"The Mirror",year:1975,type:"movie",moods:["mind-bending","dramatic","chill"],tags:["tarkovsky","russian","memory","poetic"],icon:"spiral"},
+  {id:922,title:"Vengeance Is Mine",year:1979,type:"movie",moods:["dramatic","nuts","scary"],tags:["japanese","imamura","serial-killer","unflinching"],icon:"dagger"},
+  {id:924,title:"Au Revoir les Enfants",year:1987,type:"movie",moods:["dramatic","tearjerker"],tags:["french","louis-malle","wwii","childhood","boarding-school"],icon:"heart"},
+  {id:925,title:"Sátántangó",year:1994,type:"movie",moods:["dramatic","chill","mind-bending"],tags:["hungarian","bela-tarr","7-hours","epic","bleak"],icon:"hourglass"},
+  {id:927,title:"Underground",year:1995,type:"movie",moods:["nuts","dramatic","fun"],tags:["serbian","kusturica","war","absurd","epic"],icon:"bolt"},
+  {id:929,title:"The Wind Will Carry Us",year:1999,type:"movie",moods:["chill","dramatic"],tags:["iranian","kiarostami","village","contemplative"],icon:"wind"},
+  {id:930,title:"Hidden",year:2005,type:"movie",moods:["dramatic","scary","mind-bending"],tags:["french","haneke","surveillance","guilt","ambiguous"],icon:"camera"},
+  // More series
+  {id:939,title:"Station Eleven",year:2021,type:"series",moods:["dramatic","tearjerker","mind-bending"],tags:["post-apocalyptic","hbo","art","hopeful"],icon:"globe"},
+  {id:944,title:"Andor",year:2022,type:"series",moods:["dramatic","action"],tags:["star-wars","political","rebellion","mature","smart"],icon:"star"},
+  {id:946,title:"The Last of Us",year:2023,type:"series",moods:["dramatic","action","tearjerker"],tags:["hbo","post-apocalyptic","father-daughter","video-game"],icon:"leaf"},
+  {id:947,title:"Blue Eye Samurai",year:2023,type:"series",moods:["action","dramatic"],tags:["animation","japanese","revenge","gorgeous","diverse"],icon:"dagger"},
+  {id:948,title:"Scavengers Reign",year:2023,type:"series",moods:["mind-bending","chill","scary"],tags:["animation","sci-fi","alien-planet","beautiful"],icon:"leaf"},
+  {id:949,title:"Slow Horses",year:2022,type:"series",moods:["dramatic","fun","action"],tags:["british","spy","gary-oldman","sharp"],icon:"eye"},
+  {id:955,title:"My Brilliant Friend",year:2018,type:"series",moods:["dramatic","tearjerker"],tags:["italian","ferrante","friendship","naples","epic"],icon:"book"},
+  {id:958,title:"Yellowjackets",year:2021,type:"series",moods:["scary","dramatic","mind-bending"],tags:["survival","dual-timeline","teen","dark"],icon:"flame"},
+  {id:960,title:"Beforeigners",year:2019,type:"series",moods:["fun","mind-bending","dramatic"],tags:["norwegian","time-travel","crime","unique"],icon:"clock"},
+  // More anime
+  {id:961,title:"Pluto",year:2023,type:"series",moods:["dramatic","mind-bending","tearjerker"],tags:["anime","urasawa","robot","mystery"],icon:"hex"},
+  {id:962,title:"Spy x Family",year:2022,type:"series",moods:["fun","action","chill"],tags:["anime","spy","found-family","comedy"],icon:"star"},
+  {id:963,title:"Chainsaw Man",year:2022,type:"series",moods:["action","nuts","scary"],tags:["anime","devil","visceral","subversive"],icon:"dagger"},
+  {id:964,title:"Frieren: Beyond Journey's End",year:2023,type:"series",moods:["chill","tearjerker","dramatic"],tags:["anime","elf","time","fantasy","gentle"],icon:"hourglass"},
+  {id:965,title:"Violet Evergarden",year:2018,type:"series",moods:["tearjerker","chill","dramatic"],tags:["anime","letters","post-war","gorgeous","emotional"],icon:"pen"},
+  {id:966,title:"Dororo",year:2019,type:"series",moods:["action","dramatic","tearjerker"],tags:["anime","samurai","demons","dark","redemption"],icon:"dagger"},
+  {id:967,title:"Land of the Lustrous",year:2017,type:"series",moods:["dramatic","action","mind-bending"],tags:["anime","gems","identity","cgi","unique"],icon:"diamond"},
+  {id:968,title:"A Place Further Than the Universe",year:2018,type:"series",moods:["tearjerker","fun","chill"],tags:["anime","antarctica","friendship","inspiring"],icon:"compass"},
+  {id:969,title:"Shouwa Genroku Rakugo Shinjuu",year:2016,type:"series",moods:["dramatic","tearjerker"],tags:["anime","performance-art","historical","intimate"],icon:"mask"},
+  {id:970,title:"Serial Experiments Lain",year:1998,type:"series",moods:["mind-bending","scary"],tags:["anime","internet","identity","surreal","prophetic"],icon:"grid"},
+  // Docs & cult
+  {id:971,title:"Man on Wire",year:2008,type:"movie",moods:["dramatic","fun"],tags:["documentary","philippe-petit","twin-towers","heist-like"],icon:"star"},
+  {id:972,title:"Searching for Sugar Man",year:2012,type:"movie",moods:["dramatic","fun","tearjerker"],tags:["documentary","music","rodriguez","remarkable"],icon:"music"},
+  {id:974,title:"Amy",year:2015,type:"movie",moods:["dramatic","tearjerker"],tags:["documentary","amy-winehouse","music","tragic"],icon:"music"},
+  {id:975,title:"Free Solo",year:2018,type:"movie",moods:["dramatic","action"],tags:["documentary","climbing","el-capitan","gripping"],icon:"mountain"},
+  {id:976,title:"Collective",year:2019,type:"movie",moods:["dramatic"],tags:["documentary","romanian","journalism","corruption"],icon:"pen"},
+  {id:977,title:"My Octopus Teacher",year:2020,type:"movie",moods:["chill","tearjerker"],tags:["documentary","nature","south-african","bond"],icon:"wave"},
+  {id:978,title:"Summer of Soul",year:2021,type:"movie",moods:["fun","dramatic"],tags:["documentary","music","harlem","1969","powerful"],icon:"music"},
+  {id:979,title:"Navalny",year:2022,type:"movie",moods:["dramatic","action"],tags:["documentary","russian","political","tension"],icon:"shield"},
+  {id:980,title:"Fire of Love",year:2022,type:"movie",moods:["romantic","chill","dramatic"],tags:["documentary","volcanoes","french","love-story"],icon:"flame"},
+  // Forgotten classics
+  {id:981,title:"Sullivan's Travels",year:1941,type:"movie",moods:["fun","dramatic"],tags:["preston-sturges","hollywood","comedy","classic"],icon:"compass"},
+  {id:982,title:"The Shop Around the Corner",year:1940,type:"movie",moods:["romantic","fun","nostalgic"],tags:["lubitsch","anonymous-letters","classic","charming"],icon:"heart"},
+  {id:983,title:"Ace in the Hole",year:1951,type:"movie",moods:["dramatic","nuts"],tags:["billy-wilder","media","cynical","trapped"],icon:"pen"},
+  {id:984,title:"The Night of the Iguana",year:1964,type:"movie",moods:["dramatic"],tags:["john-huston","mexico","tennessee-williams","ensemble"],icon:"sun"},
+  {id:985,title:"Seconds",year:1966,type:"movie",moods:["scary","mind-bending"],tags:["john-frankenheimer","identity","paranoia","cult"],icon:"eye"},
+  {id:986,title:"The Killing of a Chinese Bookie",year:1976,type:"movie",moods:["dramatic","nuts"],tags:["cassavetes","crime","nightclub","raw"],icon:"diamond"},
+  {id:987,title:"Possession",year:1981,type:"movie",moods:["scary","nuts","mind-bending"],tags:["zulawski","marriage","horror","isabelle-adjani"],icon:"spiral"},
+  {id:988,title:"Koyaanisqatsi",year:1982,type:"movie",moods:["mind-bending","chill"],tags:["documentary","experimental","philip-glass","visual"],icon:"globe"},
+  {id:989,title:"After Hours",year:1985,type:"movie",moods:["fun","nuts","scary"],tags:["scorsese","new-york","one-night","kafka-esque"],icon:"clock"},
+  {id:991,title:"The Wages of Fear",year:1953,type:"movie",moods:["action","dramatic","scary"],tags:["french","clouzot","nitroglycerin","tension"],icon:"bolt"},
+  {id:992,title:"Rififi",year:1955,type:"movie",moods:["action","dramatic"],tags:["french","heist","silent-sequence","noir"],icon:"diamond"},
+  {id:993,title:"Le Samouraï",year:1967,type:"movie",moods:["action","dramatic","chill"],tags:["french","melville","hitman","cool","minimalist"],icon:"dagger"},
+  {id:995,title:"Harakiri",year:1962,type:"movie",moods:["dramatic","action"],tags:["japanese","samurai","anti-war","devastating"],icon:"dagger"},
+  {id:996,title:"Woman in the Dunes",year:1964,type:"movie",moods:["mind-bending","dramatic"],tags:["japanese","existential","trapped","erotic"],icon:"hourglass"},
+  {id:997,title:"The Ascent",year:1977,type:"movie",moods:["dramatic","tearjerker"],tags:["russian","wwii","moral","snow","devastating"],icon:"mountain"},
+  {id:998,title:"Cría Cuervos",year:1976,type:"movie",moods:["dramatic","mind-bending"],tags:["spanish","childhood","memory","death"],icon:"eye"},
+  {id:999,title:"The Earrings of Madame de...",year:1953,type:"movie",moods:["romantic","dramatic"],tags:["french","ophüls","jewelry","circular","elegant"],icon:"diamond"},
+  {id:1000,title:"Sansho the Bailiff",year:1954,type:"movie",moods:["dramatic","tearjerker"],tags:["japanese","mizoguchi","mother-son","slavery"],icon:"heart"},
+  // ── EXPANSION BATCH 4 ──
+  // Blockbusters & crowd-pleasers
+  {id:1001,title:"The Dark Knight Rises",year:2012,type:"movie",moods:["action","dramatic"],tags:["nolan","superhero","epic","finale"],icon:"mask"},
+  {id:1004,title:"Avatar",year:2009,type:"movie",moods:["action","chill"],tags:["cameron","sci-fi","visual","immersive"],icon:"globe"},
+  {id:1010,title:"The Bourne Identity",year:2002,type:"movie",moods:["action","mind-bending"],tags:["spy","amnesia","matt-damon","kinetic"],icon:"target"},
+  {id:1011,title:"Skyfall",year:2012,type:"movie",moods:["action","dramatic"],tags:["bond","deakins","villain","gorgeous"],icon:"target"},
+  {id:1012,title:"Edge of Tomorrow",year:2014,type:"movie",moods:["action","fun","mind-bending"],tags:["sci-fi","time-loop","tom-cruise","smart"],icon:"clock"},
+  {id:1013,title:"Pacific Rim",year:2013,type:"movie",moods:["action","fun"],tags:["del-toro","kaiju","mecha","spectacle"],icon:"bolt"},
+  // Horror & genre
+  {id:1020,title:"The Conjuring",year:2013,type:"movie",moods:["scary"],tags:["james-wan","haunted-house","70s","effective"],icon:"door"},
+  {id:1022,title:"Train to Busan",year:2016,type:"movie",moods:["scary","action","dramatic"],tags:["korean","zombie","father-daughter","thrilling"],icon:"bolt"},
+  {id:1024,title:"Talk to Me",year:2022,type:"movie",moods:["scary","nuts"],tags:["australian","a24","possession","teen","viral"],icon:"skull"},
+  {id:1028,title:"The Witch Part 2",year:2022,type:"movie",moods:["action","scary"],tags:["korean","sci-fi","superpowers","violent"],icon:"bolt"},
+  // Comedy
+  {id:1030,title:"In Bruges",year:2008,type:"movie",moods:["fun","dramatic"],tags:["mcdonagh","hitman","bruges","dark-comedy"],icon:"cross"},
+  {id:1038,title:"Hot Fuzz",year:2007,type:"movie",moods:["fun","action","nuts"],tags:["edgar-wright","british","buddy","parody"],icon:"shield"},
+  {id:1039,title:"Scott Pilgrim vs. the World",year:2010,type:"movie",moods:["fun","action","romantic"],tags:["edgar-wright","video-game","visual","energetic"],icon:"bolt"},
+  // World cinema continued
+  {id:1041,title:"A Brighter Summer Day",year:1991,type:"movie",moods:["dramatic","tearjerker"],tags:["taiwanese","edward-yang","teen","4-hours","epic"],icon:"moon"},
+  {id:1044,title:"Poetry",year:2010,type:"movie",moods:["dramatic","tearjerker","chill"],tags:["korean","lee-chang-dong","grandmother","alzheimers"],icon:"pen"},
+  {id:1045,title:"The Great Beauty",year:2013,type:"movie",moods:["dramatic","chill","fun"],tags:["italian","sorrentino","rome","fellini-esque"],icon:"sun"},
+  {id:1047,title:"Timbuktu",year:2014,type:"movie",moods:["dramatic"],tags:["mauritanian","jihadist","humanity","beautiful"],icon:"sun"},
+  {id:1050,title:"The Square",year:2017,type:"movie",moods:["fun","nuts","dramatic"],tags:["swedish","östlund","art-world","cringe"],icon:"prism"},
+  {id:1054,title:"Pain and Glory",year:2019,type:"movie",moods:["dramatic","chill","tearjerker"],tags:["spanish","almodóvar","autobiographical","banderas"],icon:"heart"},
+  {id:1056,title:"Atlantics",year:2019,type:"movie",moods:["dramatic","romantic","mind-bending"],tags:["senegalese","migration","supernatural","debut"],icon:"wave"},
+  {id:1058,title:"A Sun",year:2019,type:"movie",moods:["dramatic","tearjerker"],tags:["taiwanese","family","crime","layered"],icon:"sun"},
+  {id:1059,title:"The Painted Bird",year:2019,type:"movie",moods:["dramatic","scary"],tags:["czech","wwii","black-and-white","brutal"],icon:"eye"},
+  {id:1060,title:"Quo Vadis, Aida?",year:2020,type:"movie",moods:["dramatic","tearjerker","scary"],tags:["bosnian","srebrenica","war","devastating"],icon:"shield"},
+  {id:1061,title:"Night of the Kings",year:2020,type:"movie",moods:["dramatic","fun"],tags:["ivory-coast","prison","storytelling","mythic"],icon:"moon"},
+  {id:1063,title:"Compartment No. 6",year:2021,type:"movie",moods:["romantic","chill","dramatic"],tags:["finnish-russian","train","unlikely-bond"],icon:"compass"},
+  {id:1064,title:"A Hero",year:2021,type:"movie",moods:["dramatic","mind-bending"],tags:["iranian","farhadi","moral","social-media"],icon:"prism"},
+  {id:1065,title:"Petite Maman",year:2021,type:"movie",moods:["chill","tearjerker","mind-bending"],tags:["french","céline-sciamma","childhood","grief","short"],icon:"leaf"},
+  {id:1066,title:"The Hand of God",year:2021,type:"movie",moods:["dramatic","fun","tearjerker"],tags:["italian","sorrentino","naples","autobiographical"],icon:"sun"},
+  {id:1067,title:"Nanny",year:2022,type:"movie",moods:["dramatic","scary"],tags:["senegalese-american","immigration","horror","motherhood"],icon:"eye"},
+  {id:1068,title:"Saint Omer",year:2022,type:"movie",moods:["dramatic","mind-bending"],tags:["french","courtroom","motherhood","haunting"],icon:"eye"},
+  {id:1069,title:"Return to Seoul",year:2022,type:"movie",moods:["dramatic"],tags:["korean-french","adoption","identity","raw"],icon:"compass"},
+  {id:1070,title:"All the Beauty and the Bloodshed",year:2022,type:"movie",moods:["dramatic"],tags:["documentary","nan-goldin","art","activism"],icon:"camera"},
+  // More series
+  {id:1071,title:"True Detective",year:2014,type:"series",moods:["dramatic","scary","mind-bending"],tags:["hbo","detective","philosophical","louisiana"],icon:"eye"},
+  {id:1073,title:"Ozark",year:2017,type:"series",moods:["dramatic","action","scary"],tags:["crime","family","laundering","tense"],icon:"mountain"},
+  {id:1076,title:"Flea Bag",year:2016,type:"series",moods:["fun","dramatic","tearjerker"],tags:["british","fourth-wall","phoebe-waller-bridge"],icon:"heart"},
+  {id:1077,title:"Industry",year:2020,type:"series",moods:["dramatic","nuts"],tags:["british","finance","young-professionals","hbo"],icon:"diamond"},
+  {id:1078,title:"The Rehearsal",year:2022,type:"series",moods:["nuts","mind-bending","fun"],tags:["nathan-fielder","meta","simulation","uncomfortable"],icon:"mask"},
+  {id:1079,title:"Pantheon",year:2022,type:"series",moods:["mind-bending","dramatic","action"],tags:["animation","ai","uploaded-minds","sci-fi"],icon:"grid"},
+  {id:1080,title:"From",year:2022,type:"series",moods:["scary","mind-bending","dramatic"],tags:["horror","mystery","trapped","creatures"],icon:"door"},
+  {id:1081,title:"The Curse",year:2023,type:"series",moods:["nuts","scary","mind-bending"],tags:["nathan-fielder","emma-stone","uncomfortable","surreal"],icon:"eye"},
+  {id:1082,title:"Fallout",year:2024,type:"series",moods:["action","fun","nuts"],tags:["post-apocalyptic","video-game","retro-futurism"],icon:"bolt"},
+  {id:1083,title:"Ripley",year:2024,type:"series",moods:["dramatic","mind-bending"],tags:["noir","black-and-white","italy","cat-and-mouse"],icon:"mask"},
+  {id:1084,title:"Baby Reindeer",year:2024,type:"series",moods:["dramatic","scary","tearjerker"],tags:["british","stalking","true-story","raw"],icon:"eye"},
+  {id:1085,title:"Silo",year:2023,type:"series",moods:["mind-bending","dramatic","action"],tags:["sci-fi","underground","mystery","dystopia"],icon:"grid"},
+  {id:1086,title:"Lessons in Chemistry",year:2023,type:"series",moods:["dramatic","fun"],tags:["60s","feminist","cooking","apple"],icon:"flame"},
+  {id:1087,title:"Monarch: Legacy of Monsters",year:2023,type:"series",moods:["action","dramatic"],tags:["kaiju","godzilla","multi-generation"],icon:"globe"},
+  {id:1088,title:"Bodies",year:2023,type:"series",moods:["mind-bending","action"],tags:["british","time-travel","murder","four-timelines"],icon:"clock"},
+  {id:1089,title:"Kaos",year:2024,type:"series",moods:["fun","dramatic","nuts"],tags:["greek-mythology","modern","jeff-goldblum","netflix"],icon:"bolt"},
+  {id:1090,title:"Shōgun",year:2024,type:"series",moods:["dramatic","action"],tags:["japanese","historical","political","gorgeous"],icon:"dagger"},
+  // More anime
+  {id:1091,title:"Jujutsu Kaisen",year:2020,type:"series",moods:["action","fun","nuts"],tags:["anime","supernatural","curses","animation-quality"],icon:"bolt"},
+  {id:1092,title:"Demon Slayer",year:2019,type:"series",moods:["action","dramatic","tearjerker"],tags:["anime","demons","siblings","ufotable"],icon:"dagger"},
+  {id:1093,title:"One Punch Man",year:2015,type:"series",moods:["fun","action","nuts"],tags:["anime","superhero","parody","madhouse"],icon:"bolt"},
+  {id:1094,title:"The Apothecary Diaries",year:2023,type:"series",moods:["fun","dramatic","mind-bending"],tags:["anime","mystery","historical","protagonist"],icon:"leaf"},
+  {id:1095,title:"Dungeon Meshi",year:2024,type:"series",moods:["fun","chill","action"],tags:["anime","cooking","dungeon","charming"],icon:"flame"},
+  {id:1096,title:"Oshi no Ko",year:2023,type:"series",moods:["dramatic","mind-bending","nuts"],tags:["anime","entertainment-industry","dark","reincarnation"],icon:"star"},
+  {id:1097,title:"Cyberpunk: Edgerunners",year:2022,type:"series",moods:["action","dramatic","tearjerker"],tags:["anime","cyberpunk","trigger","visceral"],icon:"bolt"},
+  {id:1098,title:"Sonny Boy",year:2021,type:"series",moods:["mind-bending","chill","dramatic"],tags:["anime","surreal","drifting","experimental"],icon:"spiral"},
+  {id:1099,title:"Vivy: Fluorite Eye's Song",year:2021,type:"series",moods:["action","tearjerker","mind-bending"],tags:["anime","ai","music","time","wit-studio"],icon:"music"},
+  {id:1100,title:"86",year:2021,type:"series",moods:["action","dramatic","tearjerker"],tags:["anime","mecha","war","prejudice","emotional"],icon:"shield"},
+  {id:1101,title:"Summertime Rendering",year:2022,type:"series",moods:["mind-bending","scary","action"],tags:["anime","mystery","time-loop","island"],icon:"sun"},
+  {id:1102,title:"The Tatami Galaxy",year:2010,type:"series",moods:["fun","mind-bending","romantic"],tags:["anime","college","time","experimental"],icon:"clock"},
+  {id:1103,title:"Erased",year:2016,type:"series",moods:["dramatic","mind-bending","tearjerker"],tags:["anime","time-travel","murder","childhood"],icon:"clock"},
+  {id:1104,title:"Psycho-Pass",year:2012,type:"series",moods:["action","mind-bending","dramatic"],tags:["anime","dystopia","crime","cyberpunk"],icon:"eye"},
+  // Anime films
+  {id:1106,title:"Tokyo Godfathers",year:2003,type:"movie",moods:["fun","tearjerker","dramatic"],tags:["anime","satoshi-kon","christmas","homeless"],icon:"star"},
+  {id:1108,title:"Weathering with You",year:2019,type:"movie",moods:["romantic","chill","tearjerker"],tags:["anime","shinkai","weather","tokyo"],icon:"wave"},
+  {id:1109,title:"Belle",year:2021,type:"movie",moods:["dramatic","fun","tearjerker"],tags:["anime","hosoda","virtual-world","beauty-beast"],icon:"music"},
+  {id:1110,title:"Suzume",year:2022,type:"movie",moods:["action","romantic","tearjerker"],tags:["anime","shinkai","disaster","road-trip"],icon:"door"},
+  {id:1111,title:"The Boy and the Heron",year:2023,type:"movie",moods:["mind-bending","dramatic","chill"],tags:["anime","ghibli","miyazaki","surreal","grief"],icon:"feather"},
+  {id:1112,title:"Look Back",year:2024,type:"movie",moods:["tearjerker","chill","dramatic"],tags:["anime","manga","friendship","creation"],icon:"pen"},
+  {id:1114,title:"Redline",year:2009,type:"movie",moods:["action","fun","nuts"],tags:["anime","racing","hand-drawn","madhouse","kinetic"],icon:"bolt"},
+  // Indian cinema
+  {id:1115,title:"Lagaan",year:2001,type:"movie",moods:["dramatic","fun"],tags:["indian","cricket","british-raj","musical"],icon:"target"},
+  {id:1117,title:"Drishyam",year:2015,type:"movie",moods:["dramatic","mind-bending"],tags:["indian","thriller","family","clever"],icon:"eye"},
+  {id:1119,title:"Gully Boy",year:2019,type:"movie",moods:["dramatic","fun"],tags:["indian","hip-hop","underdog","mumbai"],icon:"music"},
+  {id:1120,title:"Jallikattu",year:2019,type:"movie",moods:["nuts","action","dramatic"],tags:["indian","bull","chaos","primal","short"],icon:"flame"},
+  {id:1121,title:"The Disciple",year:2020,type:"movie",moods:["dramatic","chill"],tags:["indian","music","classical","chaitanya-tamhane"],icon:"music"},
+  {id:1122,title:"Kantara",year:2022,type:"movie",moods:["action","dramatic"],tags:["indian","folklore","nature","powerful"],icon:"flame"},
+  {id:1123,title:"Vikram",year:2022,type:"movie",moods:["action","nuts"],tags:["indian","tamil","thriller","kamal-haasan"],icon:"bolt"},
+  {id:1124,title:"12th Fail",year:2023,type:"movie",moods:["dramatic","tearjerker"],tags:["indian","true-story","upsc","inspiring"],icon:"star"},
+  {id:1125,title:"Animal",year:2023,type:"movie",moods:["dramatic","action","nuts"],tags:["indian","father-son","dark","polarizing"],icon:"flame"},
+  // ── EXPANSION BATCH 5 ──
+  // Classic & golden age gaps
+  {id:1126,title:"The Thin Man",year:1934,type:"movie",moods:["fun","romantic","nostalgic"],tags:["mystery","couple","witty","classic","cocktails"],icon:"diamond"},
+  {id:1127,title:"Bringing Up Baby",year:1938,type:"movie",moods:["fun","romantic","nostalgic"],tags:["screwball","hepburn-grant","leopard","classic"],icon:"sparkle"},
+  {id:1128,title:"The Lady Vanishes",year:1938,type:"movie",moods:["fun","mind-bending","nostalgic"],tags:["hitchcock","train","mystery","british"],icon:"compass"},
+  {id:1129,title:"His Girl Friday",year:1940,type:"movie",moods:["fun","romantic","nostalgic"],tags:["screwball","journalism","fast-talking","classic"],icon:"pen"},
+  {id:1130,title:"The Treasure of the Sierra Madre",year:1948,type:"movie",moods:["dramatic","action","nostalgic"],tags:["bogart","gold","greed","huston"],icon:"mountain"},
+  {id:1131,title:"Strangers on a Train",year:1951,type:"movie",moods:["scary","mind-bending","nostalgic"],tags:["hitchcock","murder-swap","tension","classic"],icon:"compass"},
+  {id:1132,title:"Stalag 17",year:1953,type:"movie",moods:["dramatic","fun","nostalgic"],tags:["billy-wilder","pow","wwii","spy-hunt"],icon:"shield"},
+  {id:1133,title:"The Killing",year:1956,type:"movie",moods:["dramatic","action","nostalgic"],tags:["kubrick","heist","nonlinear","noir"],icon:"clock"},
+  {id:1134,title:"Witness for the Prosecution",year:1957,type:"movie",moods:["dramatic","mind-bending","nostalgic"],tags:["billy-wilder","courtroom","twist","classic"],icon:"prism"},
+  {id:1135,title:"Anatomy of a Murder",year:1959,type:"movie",moods:["dramatic","nostalgic"],tags:["courtroom","jazz","jimmy-stewart","classic"],icon:"music"},
+  {id:1136,title:"The Hustler",year:1961,type:"movie",moods:["dramatic","nostalgic"],tags:["pool","newman","ambition","black-and-white"],icon:"target"},
+  {id:1137,title:"Cape Fear",year:1962,type:"movie",moods:["scary","dramatic","nostalgic"],tags:["thriller","psychopath","family","tension"],icon:"eye"},
+  // 70s-80s missing
+  {id:1138,title:"Serpico",year:1973,type:"movie",moods:["dramatic","action"],tags:["al-pacino","corruption","nypd","true-story"],icon:"shield"},
+  {id:1139,title:"The Wicker Man",year:1973,type:"movie",moods:["scary","mind-bending"],tags:["british","folk-horror","island","cult"],icon:"flame"},
+  {id:1140,title:"Picnic at Hanging Rock",year:1975,type:"movie",moods:["mind-bending","scary","chill"],tags:["australian","mystery","victorian","haunting"],icon:"mountain"},
+  {id:1141,title:"The Outlaw Josey Wales",year:1976,type:"movie",moods:["action","dramatic","nostalgic"],tags:["western","eastwood","civil-war","revenge"],icon:"target"},
+  {id:1142,title:"Sorcerer",year:1977,type:"movie",moods:["action","dramatic","scary"],tags:["friedkin","nitroglycerin","jungle","tension"],icon:"bolt"},
+  {id:1143,title:"Nostalgia",year:1983,type:"movie",moods:["dramatic","chill","mind-bending"],tags:["tarkovsky","italian","russian","exile","poetic"],icon:"flame"},
+  {id:1144,title:"Blood Simple",year:1984,type:"movie",moods:["dramatic","scary","nuts"],tags:["coen-brothers","noir","debut","texas"],icon:"eye"},
+  {id:1145,title:"Mishima: A Life in Four Chapters",year:1985,type:"movie",moods:["dramatic","mind-bending"],tags:["paul-schrader","japanese","biographical","philip-glass"],icon:"mask"},
+  {id:1146,title:"Aliens",year:1986,type:"movie",moods:["action","scary","nostalgic"],tags:["cameron","sci-fi","ripley","sequel"],icon:"bolt"},
+  {id:1147,title:"The Untouchables",year:1987,type:"movie",moods:["action","dramatic","nostalgic"],tags:["de-palma","prohibition","connery","chicago"],icon:"shield"},
+  {id:1148,title:"Predator",year:1987,type:"movie",moods:["action","scary","nostalgic"],tags:["schwarzenegger","jungle","alien","80s"],icon:"target"},
+  {id:1149,title:"Beetlejuice",year:1988,type:"movie",moods:["fun","nuts","nostalgic"],tags:["burton","afterlife","comedy","cult"],icon:"skull"},
+  {id:1150,title:"Crimes and Misdemeanors",year:1989,type:"movie",moods:["dramatic","fun"],tags:["woody-allen","moral","dual-stories","philosophical"],icon:"eye"},
+  // 90s gaps
+  {id:1151,title:"Jacob's Ladder",year:1990,type:"movie",moods:["scary","mind-bending"],tags:["vietnam","psychological","nightmare","cult"],icon:"spiral"},
+  {id:1152,title:"Misery",year:1990,type:"movie",moods:["scary","dramatic"],tags:["stephen-king","captivity","fan","tension"],icon:"book"},
+  {id:1153,title:"La Femme Nikita",year:1990,type:"movie",moods:["action","dramatic"],tags:["french","luc-besson","assassin","stylish"],icon:"target"},
+  {id:1154,title:"A League of Their Own",year:1992,type:"movie",moods:["fun","dramatic","nostalgic"],tags:["baseball","women","wwii","heartwarming"],icon:"star"},
+  {id:1156,title:"The Fugitive",year:1993,type:"movie",moods:["action","dramatic"],tags:["harrison-ford","wrongly-accused","chase","thrilling"],icon:"bolt"},
+  {id:1157,title:"The Crow",year:1994,type:"movie",moods:["action","dramatic","scary"],tags:["gothic","revenge","cult","tragedy"],icon:"skull"},
+  {id:1158,title:"Muriel's Wedding",year:1994,type:"movie",moods:["fun","dramatic","tearjerker"],tags:["australian","abba","self-discovery","dark-comedy"],icon:"music"},
+  {id:1160,title:"Welcome to the Dollhouse",year:1995,type:"movie",moods:["dramatic","fun"],tags:["todd-solondz","teen","cringe","indie"],icon:"eye"},
+  {id:1161,title:"Swingers",year:1996,type:"movie",moods:["fun","romantic"],tags:["los-angeles","swing","friendship","vince-vaughn"],icon:"music"},
+  {id:1162,title:"Bound",year:1996,type:"movie",moods:["action","dramatic","romantic"],tags:["wachowskis","noir","queer","heist"],icon:"diamond"},
+  {id:1163,title:"The Fifth Element",year:1997,type:"movie",moods:["action","fun","nuts"],tags:["luc-besson","sci-fi","colorful","camp"],icon:"sparkle"},
+  {id:1164,title:"Contact",year:1997,type:"movie",moods:["dramatic","mind-bending"],tags:["sci-fi","jodie-foster","sagan","faith-science"],icon:"radio"},
+  {id:1165,title:"Out of Sight",year:1998,type:"movie",moods:["fun","romantic","action"],tags:["soderbergh","clooney-lopez","crime","chemistry"],icon:"star"},
+  {id:1166,title:"Pleasantville",year:1998,type:"movie",moods:["fun","dramatic","mind-bending"],tags:["meta","50s","color","allegory"],icon:"film"},
+  {id:1167,title:"Election",year:1999,type:"movie",moods:["fun","dramatic"],tags:["alexander-payne","high-school","politics","dark-comedy"],icon:"star"},
+  {id:1168,title:"Galaxy Quest",year:1999,type:"movie",moods:["fun","action"],tags:["sci-fi","parody","star-trek","heartfelt"],icon:"star"},
+  {id:1169,title:"Ghost Dog: The Way of the Samurai",year:1999,type:"movie",moods:["action","chill","dramatic"],tags:["jarmusch","hitman","samurai","hip-hop"],icon:"dagger"},
+  // 2000s-2020s
+  {id:1170,title:"Cast Away",year:2000,type:"movie",moods:["dramatic","chill"],tags:["tom-hanks","island","survival","solitude"],icon:"wave"},
+  {id:1171,title:"Snatch",year:2000,type:"movie",moods:["fun","action","nuts"],tags:["guy-ritchie","crime","ensemble","fast-paced"],icon:"diamond"},
+  {id:1172,title:"The Count of Monte Cristo",year:2002,type:"movie",moods:["action","dramatic"],tags:["revenge","adventure","adaptation","satisfying"],icon:"dagger"},
+  {id:1173,title:"Road to Perdition",year:2002,type:"movie",moods:["dramatic","action"],tags:["sam-mendes","gangster","father-son","gorgeous"],icon:"shield"},
+  {id:1174,title:"About Schmidt",year:2002,type:"movie",moods:["dramatic","fun","chill"],tags:["alexander-payne","retirement","road-trip","nicholson"],icon:"compass"},
+  {id:1175,title:"Swimming Pool",year:2003,type:"movie",moods:["dramatic","mind-bending"],tags:["french","ozon","writer","mystery","provencal"],icon:"eye"},
+  {id:1177,title:"The Station Agent",year:2003,type:"movie",moods:["chill","dramatic","fun"],tags:["indie","friendship","trains","quiet"],icon:"compass"},
+  {id:1178,title:"Maria Full of Grace",year:2004,type:"movie",moods:["dramatic"],tags:["colombian","drug-mule","immigration","tense"],icon:"compass"},
+  {id:1179,title:"Collateral",year:2004,type:"movie",moods:["action","dramatic"],tags:["mann","hitman","la","night","cruise-foxx"],icon:"moon"},
+  {id:1180,title:"Layer Cake",year:2004,type:"movie",moods:["action","fun","dramatic"],tags:["british","crime","stylish","daniel-craig"],icon:"diamond"},
+  {id:1181,title:"Kiss Kiss Bang Bang",year:2005,type:"movie",moods:["fun","action"],tags:["shane-black","noir","meta","downey-jr"],icon:"target"},
+  {id:1182,title:"The Fall",year:2006,type:"movie",moods:["dramatic","chill","mind-bending"],tags:["tarsem","visual","fairy-tale","hospital"],icon:"sparkle"},
+  {id:1183,title:"The Fountain",year:2006,type:"movie",moods:["mind-bending","dramatic","romantic"],tags:["aronofsky","three-timelines","love","death"],icon:"tree"},
+  {id:1185,title:"In the Valley of Elah",year:2007,type:"movie",moods:["dramatic"],tags:["tommy-lee-jones","iraq","mystery","quiet"],icon:"shield"},
+  {id:1186,title:"Doubt",year:2008,type:"movie",moods:["dramatic"],tags:["streep-hoffman","church","ambiguity","theatre"],icon:"cross"},
+  {id:1187,title:"The Wrestler",year:2008,type:"movie",moods:["dramatic","tearjerker"],tags:["aronofsky","wrestling","aging","mickey-rourke"],icon:"bolt"},
+  {id:1189,title:"The Secret World of Arrietty",year:2010,type:"movie",moods:["chill","fun"],tags:["anime","ghibli","tiny-people","charming"],icon:"leaf"},
+  {id:1190,title:"Submarine",year:2010,type:"movie",moods:["fun","romantic","dramatic"],tags:["british","welsh","teen","quirky","wes-anderson-ish"],icon:"wave"},
+  {id:1191,title:"Attack the Block",year:2011,type:"movie",moods:["action","fun","scary"],tags:["british","aliens","south-london","debut"],icon:"bolt"},
+  {id:1192,title:"We Need to Talk About Kevin",year:2011,type:"movie",moods:["dramatic","scary"],tags:["tilda-swinton","motherhood","school","disturbing"],icon:"eye"},
+  {id:1193,title:"A Royal Affair",year:2012,type:"movie",moods:["romantic","dramatic"],tags:["danish","period","political","mads-mikkelsen"],icon:"crown"},
+  {id:1194,title:"Short Term 12",year:2013,type:"movie",moods:["dramatic","tearjerker"],tags:["brie-larson","foster-care","indie","raw"],icon:"heart"},
+  {id:1195,title:"The Spectacular Now",year:2013,type:"movie",moods:["romantic","dramatic"],tags:["teen","alcoholism","genuine","indie"],icon:"sun"},
+  {id:1199,title:"Dheepan",year:2015,type:"movie",moods:["dramatic","action"],tags:["french","sri-lankan","immigration","audiard"],icon:"shield"},
+  {id:1202,title:"The Neon Demon",year:2016,type:"movie",moods:["scary","mind-bending","nuts"],tags:["refn","fashion","la","visual","provocative"],icon:"eye"},
+  {id:1203,title:"Silence",year:2016,type:"movie",moods:["dramatic"],tags:["scorsese","japan","faith","missionaries","epic"],icon:"cross"},
+  {id:1204,title:"Logan",year:2017,type:"movie",moods:["action","dramatic","tearjerker"],tags:["superhero","western","aging","brutal"],icon:"dagger"},
+  {id:1206,title:"Blade Runner 2049",year:2017,type:"movie",moods:["mind-bending","dramatic","chill"],tags:["villeneuve","sci-fi","sequel","gorgeous"],icon:"eye"},
+  {id:1207,title:"You Were Never Really Here",year:2017,type:"movie",moods:["dramatic","action","scary"],tags:["lynne-ramsay","joaquin-phoenix","trauma","visceral"],icon:"dagger"},
+  {id:1208,title:"Searching",year:2018,type:"movie",moods:["mind-bending","dramatic"],tags:["screen-life","mystery","father","clever"],icon:"grid"},
+  {id:1209,title:"Blindspotting",year:2018,type:"movie",moods:["dramatic","fun"],tags:["oakland","gentrification","rap","friendship"],icon:"music"},
+  {id:1210,title:"The Peanut Butter Falcon",year:2019,type:"movie",moods:["fun","chill","tearjerker"],tags:["road-trip","down-syndrome","wrestling","heartwarming"],icon:"compass"},
+  {id:1213,title:"Pig",year:2021,type:"movie",moods:["dramatic","chill"],tags:["nicolas-cage","portland","truffle","quiet","grief"],icon:"leaf"},
+  {id:1214,title:"The Green Knight",year:2021,type:"movie",moods:["mind-bending","dramatic","chill"],tags:["a24","arthurian","visual","atmospheric"],icon:"shield"},
+  {id:1215,title:"C'mon C'mon",year:2021,type:"movie",moods:["chill","dramatic","tearjerker"],tags:["black-and-white","uncle-nephew","gentle","joaquin-phoenix"],icon:"radio"},
+  {id:1218,title:"Marcel the Shell with Shoes On",year:2021,type:"movie",moods:["fun","tearjerker","chill"],tags:["stop-motion","documentary-style","tiny","heartwarming"],icon:"heart"},
+  {id:1219,title:"Prey",year:2022,type:"movie",moods:["action","scary"],tags:["predator","comanche","survival","prequel"],icon:"target"},
+  {id:1220,title:"Glass Onion",year:2022,type:"movie",moods:["fun","mind-bending"],tags:["rian-johnson","whodunit","island","clever"],icon:"diamond"},
+  {id:1221,title:"The Menu",year:2022,type:"movie",moods:["fun","scary","dramatic"],tags:["food","satire","dark","ralph-fiennes"],icon:"flame"},
+  {id:1222,title:"Pearl",year:2022,type:"movie",moods:["scary","dramatic","nuts"],tags:["mia-goth","origin-story","technicolor","unhinged"],icon:"star"},
+  {id:1223,title:"Bones and All",year:2022,type:"movie",moods:["romantic","dramatic","scary"],tags:["guadagnino","cannibal","road-trip","tender"],icon:"heart"},
+  {id:1224,title:"Thelma",year:2024,type:"movie",moods:["fun","action"],tags:["june-squibb","grandmother","heist","heartwarming"],icon:"star"},
+  {id:1225,title:"Challengers",year:2024,type:"movie",moods:["dramatic","romantic","fun"],tags:["guadagnino","tennis","triangle","electrifying"],icon:"bolt"},
+  {id:1226,title:"Conclave",year:2024,type:"movie",moods:["dramatic","mind-bending"],tags:["papal-election","ralph-fiennes","thriller","twist"],icon:"cross"},
+  {id:1227,title:"The Substance",year:2024,type:"movie",moods:["scary","nuts"],tags:["body-horror","demi-moore","feminist","wild"],icon:"spiral"},
+  {id:1228,title:"Anora",year:2024,type:"movie",moods:["dramatic","fun","romantic"],tags:["sean-baker","brighton-beach","class","palme-dor"],icon:"diamond"},
+  {id:1229,title:"Dune: Part Two",year:2024,type:"movie",moods:["action","dramatic","mind-bending"],tags:["villeneuve","sci-fi","epic","desert"],icon:"sun"},
+  {id:1230,title:"The Brutalist",year:2024,type:"movie",moods:["dramatic"],tags:["adrien-brody","architecture","immigration","epic"],icon:"grid"},
+  // More series
+  {id:1233,title:"Maniac",year:2018,type:"series",moods:["mind-bending","fun","dramatic"],tags:["jonah-hill","emma-stone","drug-trial","surreal"],icon:"spiral"},
+  {id:1234,title:"Watchmen",year:2019,type:"series",moods:["mind-bending","dramatic","action"],tags:["hbo","superhero","race","alternate-history"],icon:"mask"},
+  {id:1237,title:"Invincible",year:2021,type:"series",moods:["action","dramatic","nuts"],tags:["animation","superhero","violent","subversive"],icon:"bolt"},
+  {id:1238,title:"For All Mankind",year:2019,type:"series",moods:["dramatic","action"],tags:["alternate-history","space","apple","ensemble"],icon:"star"},
+  {id:1239,title:"Dopesick",year:2021,type:"series",moods:["dramatic"],tags:["opioid","true-story","pharmaceutical","hulu"],icon:"flame"},
+  {id:1240,title:"The Great",year:2020,type:"series",moods:["fun","dramatic","nuts"],tags:["catherine","russia","period","irreverent"],icon:"crown"},
+  {id:1241,title:"Heartstopper",year:2022,type:"series",moods:["romantic","fun","chill"],tags:["british","teen","lgbtq","wholesome"],icon:"heart"},
+  {id:1242,title:"The Diplomat",year:2023,type:"series",moods:["dramatic","fun"],tags:["political","keri-russell","marriage","sharp"],icon:"globe"},
+  {id:1244,title:"The Morning Show",year:2019,type:"series",moods:["dramatic"],tags:["apple","journalism","metoo","aniston-witherspoon"],icon:"camera"},
+  {id:1245,title:"Hacks",year:2021,type:"series",moods:["fun","dramatic"],tags:["comedy","las-vegas","mentorship","jean-smart"],icon:"star"},
+  {id:1246,title:"Shrinking",year:2023,type:"series",moods:["fun","dramatic","tearjerker"],tags:["therapy","jason-segel","harrison-ford","apple"],icon:"heart"},
+];
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RECOMMENDATION ENGINE — Soft-weight system
+   Liked tags boost score, disliked tags reduce. Rated titles get heavy penalty
+   but are NOT excluded — they just appear much less often.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function buildTasteScores(ratings) {
+  const tagScores = {};
+  Object.entries(ratings).forEach(([id, r]) => {
+    const movie = DB.find(m => m.id === parseInt(id));
+    if (!movie) return;
+    const w = r === "like" ? 1.2 : r === "dislike" ? -0.7 : 0;
+    if (w !== 0) movie.tags.forEach(t => { tagScores[t] = (tagScores[t] || 0) + w; });
+  });
+  return tagScores;
+}
+
+function scoreAndPick(candidates, tagScores, ratings, count) {
+  // Shuffle-first approach: randomness dominates, taste is a mild boost
+  const scored = candidates.map(m => {
+    let taste = 0;
+    m.tags.forEach(t => { taste += tagScores[t] || 0; });
+    // Clamp taste influence so it nudges but doesn't dominate
+    taste = Math.max(-2, Math.min(2, taste * 0.3));
+    // Heavy penalty for already-rated titles
+    const r = ratings[m.id];
+    if (r === "like") taste -= 20;
+    else if (r === "neutral") taste -= 25;
+    else if (r === "dislike") taste -= 30;
+    // Random is the main driver — ensures real variety on each refresh
+    const score = Math.random() * 10 + taste;
+    return { ...m, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, count);
+}
+
+function getRecommendations(mood, ratings, typeFilter, count = 4) {
+  const tagScores = buildTasteScores(ratings);
+  const seen = new Set(Object.keys(ratings).map(Number));
+  let candidates = DB.filter(m => m.moods.includes(mood) && !seen.has(m.id));
+  if (typeFilter !== "all") candidates = candidates.filter(m => m.type === typeFilter);
+  return scoreAndPick(candidates, tagScores, ratings, count);
+}
+
+function getSurpriseRecommendations(ratings, typeFilter, count = 4) {
+  const tagScores = buildTasteScores(ratings);
+  let candidates = [...DB];
+  if (typeFilter !== "all") candidates = candidates.filter(m => m.type === typeFilter);
+  if (Object.keys(ratings).length === 0) {
+    return candidates.sort(() => Math.random() - 0.5).slice(0, count);
+  }
+  return scoreAndPick(candidates, tagScores, ratings, count);
+}
+
+function getOneReplacement(mood, ratings, excludeIds, typeFilter) {
+  const tagScores = buildTasteScores(ratings);
+  const seen = new Set(Object.keys(ratings).map(Number));
+  const exclude = new Set([...seen, ...excludeIds]);
+  let candidates = mood
+    ? DB.filter(m => m.moods.includes(mood) && !exclude.has(m.id))
+    : DB.filter(m => !exclude.has(m.id));
+  if (typeFilter !== "all") candidates = candidates.filter(m => m.type === typeFilter);
+  if (candidates.length === 0) return null;
+  return scoreAndPick(candidates, tagScores, ratings, 1)[0] || null;
+}
+
+function getTasteProfile(ratings) {
+  const liked = Object.entries(ratings).filter(([, r]) => r === "like").map(([id]) => parseInt(id));
+  if (liked.length === 0) return [];
+  const tagCounts = {};
+  liked.forEach(id => {
+    const movie = DB.find(m => m.id === id);
+    if (movie) movie.tags.forEach(t => { tagCounts[t] = (tagCounts[t] || 0) + 1; });
+  });
+  return Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([t]) => t.replace(/-/g, " "));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STORAGE
+   ═══════════════════════════════════════════════════════════════════════════ */
+const SK = "wtf_r4", WK = "wtf_w4";
+function loadR() { try { const s = localStorage.getItem(SK); return s ? JSON.parse(s) : {}; } catch { return {}; } }
+function saveR(r) { try { localStorage.setItem(SK, JSON.stringify(r)); } catch {} }
+function loadW() { try { const s = localStorage.getItem(WK); return s ? JSON.parse(s) : []; } catch { return []; } }
+function saveW(l) { try { localStorage.setItem(WK, JSON.stringify(l)); } catch {} }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOVIE CARD COMPONENT
+   ═══════════════════════════════════════════════════════════════════════════ */
+function MovieCard({ movie, rating, onRate, onWatchlist, isOnWatchlist, style, isExiting, theme }) {
+  const moodColor = MOOD_MAP[movie.moods[0]]?.color || "#666";
+  const t = theme || TH.dark;
+  return (
+    <div style={{
+      ...S.card, background: t.card, borderColor: t.border, ...style,
+      ...(isExiting ? { animation: "fadeOut 0.3s ease forwards", pointerEvents: "none" } : {}),
+    }}>
+      <div style={{ ...S.poster, borderColor: moodColor + "25", background: t.bg }}>
+        <MiniIcon name={movie.icon} color={moodColor} />
+      </div>
+      <div style={S.info}>
+        <div style={{ ...S.title, color: t.text }}>{movie.title}</div>
+        <div style={{ ...S.meta, color: t.sub }}>{movie.year} · {movie.type === "series" ? "Series" : "Film"}</div>
+        <div style={S.tags}>
+          {movie.tags.slice(0, 3).map(t2 => (
+            <span key={t2} style={{ ...S.tagPill, background: t.pill, color: t.pillText }}>{t2.replace(/-/g, " ")}</span>
+          ))}
+        </div>
+      </div>
+      <div style={S.actions}>
+        <button onClick={() => onRate(movie.id, "like")} style={{
+          ...S.rBtn, background: rating === "like" ? "#55A38B15" : "transparent",
+          color: rating === "like" ? "#55A38B" : t.sub,
+        }} title="Liked it">▲</button>
+        <button onClick={() => onRate(movie.id, "neutral")} style={{
+          ...S.rBtn, background: rating === "neutral" ? "#88888815" : "transparent",
+          color: rating === "neutral" ? "#AAA" : t.dim, fontSize: 8,
+        }} title="Seen, no opinion">●</button>
+        <button onClick={() => onRate(movie.id, "dislike")} style={{
+          ...S.rBtn, background: rating === "dislike" ? "#E8637A15" : "transparent",
+          color: rating === "dislike" ? "#E8637A" : t.sub,
+        }} title="Not for me">▼</button>
+        <button onClick={() => onWatchlist(movie.id)} style={{
+          ...S.rBtn, background: isOnWatchlist ? "#F5A62315" : "transparent",
+          color: isOnWatchlist ? "#F5A623" : t.sub, fontSize: 14,
+        }} title={isOnWatchlist ? "Remove" : "Watch Later"}>{isOnWatchlist ? "★" : "☆"}</button>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAIN APP
+   ═══════════════════════════════════════════════════════════════════════════ */
+export default function App() {
+  const [view, setView] = useState("home");
+  const [selectedMood, setSelectedMood] = useState(null);
+  const [results, setResults] = useState([]);
+  const [ratings, setRatings] = useState(loadR);
+  const [watchlist, setWatchlist] = useState(loadW);
+  const [browseSearch, setBrowseSearch] = useState("");
+  const [browseFilter, setBrowseFilter] = useState("all");
+  const [resultTypeFilter, setResultTypeFilter] = useState("all");
+  const [animateIn, setAnimateIn] = useState(false);
+  const [exitingIds, setExitingIds] = useState(new Set());
+  const [ratedFilter, setRatedFilter] = useState("all");
+  const [ratedType, setRatedType] = useState("all");
+  const [dark, setDark] = useState(() => { try { return localStorage.getItem("wtf_theme") !== "light"; } catch { return true; } });
+  const [browseMoodTag, setBrowseMoodTag] = useState(new Set());
+  const [ratedMoodTag, setRatedMoodTag] = useState(new Set());
+  const [wlMoodTag, setWlMoodTag] = useState(new Set());
+  const [wlType, setWlType] = useState("all");
+
+  const toggleMoodTag = (setter) => (id) => {
+    setter(prev => {
+      if (id === "all") return new Set();
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const matchMoodSet = (moods, filterSet) => filterSet.size === 0 || moods.some(m => filterSet.has(m));
+
+  useEffect(() => { try { localStorage.setItem("wtf_theme", dark ? "dark" : "light"); } catch {} }, [dark]);
+  const T = dark ? TH.dark : TH.light;
+
+  useEffect(() => { saveR(ratings); }, [ratings]);
+  useEffect(() => { saveW(watchlist); }, [watchlist]);
+
+  // Rate-and-replace in results
+  const handleRateInResults = useCallback((id, value) => {
+    setExitingIds(prev => new Set([...prev, id]));
+    setTimeout(() => {
+      setRatings(prev => ({ ...prev, [id]: value }));
+      setResults(prev => {
+        const currentIds = prev.map(m => m.id);
+        const updatedRatings = { ...ratings, [id]: value };
+        const replacement = getOneReplacement(selectedMood, updatedRatings, currentIds, resultTypeFilter);
+        const next = prev.filter(m => m.id !== id);
+        if (replacement) next.push(replacement);
+        return next;
+      });
+      setExitingIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+    }, 300);
+  }, [ratings, selectedMood, resultTypeFilter]);
+
+  // Toggle rate in browse/watchlist
+  const handleRate = useCallback((id, value) => {
+    setRatings(prev => {
+      const next = { ...prev };
+      if (prev[id] === value) delete next[id];
+      else next[id] = value;
+      return next;
+    });
+  }, []);
+
+  const handleWatchlist = useCallback((id) => {
+    setWatchlist(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  }, []);
+
+  const selectMood = (moodId) => {
+    setSelectedMood(moodId);
+    setResults(getRecommendations(moodId, ratings, resultTypeFilter));
+    setAnimateIn(false);
+    setTimeout(() => { setView("results"); setAnimateIn(true); }, 50);
+  };
+
+  const handleSurprise = () => {
+    setSelectedMood(null);
+    setResults(getSurpriseRecommendations(ratings, resultTypeFilter));
+    setAnimateIn(false);
+    setTimeout(() => { setView("results"); setAnimateIn(true); }, 50);
+  };
+
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refreshResults = () => {
+    setResults([]);
+    setAnimateIn(false);
+    setTimeout(() => {
+      const recs = selectedMood
+        ? getRecommendations(selectedMood, ratings, resultTypeFilter)
+        : getSurpriseRecommendations(ratings, resultTypeFilter);
+      setResults([...recs]);
+      setRefreshKey(k => k + 1);
+      setTimeout(() => setAnimateIn(true), 50);
+    }, 80);
+  };
+
+  // When type filter changes in results view, refresh
+  const changeResultTypeFilter = (f) => {
+    setResultTypeFilter(f);
+    const recs = selectedMood
+      ? getRecommendations(selectedMood, ratings, f)
+      : getSurpriseRecommendations(ratings, f);
+    setResults(recs);
+    setAnimateIn(false);
+    setTimeout(() => setAnimateIn(true), 50);
+  };
+
+  const tasteProfile = getTasteProfile(ratings);
+  const ratedCount = Object.keys(ratings).length;
+
+  const filteredBrowse = DB.filter(m => {
+    const q = browseSearch.toLowerCase();
+    const matchSearch = m.title.toLowerCase().includes(q) ||
+      m.tags.some(t => t.includes(q)) || m.moods.some(mood => mood.includes(q));
+    const matchType = browseFilter === "all" || m.type === browseFilter;
+    const matchMood = matchMoodSet(m.moods, browseMoodTag);
+    return matchSearch && matchType && matchMood;
+  });
+
+  const TypeToggle = ({ value, onChange, style: s }) => (
+    <div style={{ ...S.filterBtns, background: T.card, borderColor: T.border, ...s }}>
+      {[["all","All"],["movie","Films"],["series","Series"]].map(([f, label]) => (
+        <button key={f} onClick={() => onChange(f)} style={{
+          ...S.filterBtn, background: value === f ? (dark?"#222":T.border) : "transparent",
+          color: value === f ? T.text : T.sub,
+        }}>{label}</button>
+      ))}
+    </div>
+  );
+
+  const MoodTagStrip = ({ value, onChange }) => (
+    <div style={{ display:"flex", gap:4, overflowX:"auto", paddingBottom:6, marginBottom:6 }}>
+      <button onClick={() => onChange("all")} style={{
+        ...S.filterBtn, border:"1px solid", flexShrink:0, fontSize:11,
+        borderColor: value.size===0 ? T.accent : T.border,
+        background: value.size===0 ? T.accent+"18" : "transparent",
+        color: value.size===0 ? T.accent : T.sub,
+      }}>All</button>
+      {MOODS.map(m => (
+        <button key={m.id} onClick={() => onChange(m.id)} style={{
+          ...S.filterBtn, border:"1px solid", flexShrink:0, fontSize:11,
+          borderColor: value.has(m.id) ? m.color : T.border,
+          background: value.has(m.id) ? m.color+"18" : "transparent",
+          color: value.has(m.id) ? m.color : T.sub,
+        }}>{m.icon} {m.label}</button>
+      ))}
+    </div>
+  );
+
+  return (
+    <div style={{ ...S.appWrap, background: T.bg, color: T.text }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&family=Playfair+Display:wght@400;500;600;700&family=Playfair+Display+SC:wght@400;700;900&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: ${T.bg}; transition: background 0.3s; }
+        input:focus, button:focus { outline: none; }
+        ::selection { background: ${T.accent}44; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        @keyframes fadeOut { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-8px); } }
+        @keyframes slideIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        button { cursor: pointer; font-family: inherit; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: ${dark?"#333":"#CCC"}; border-radius: 4px; }
+      `}</style>
+
+      <div style={S.container}>
+        {/* HEADER */}
+        <header style={{ ...S.header, borderColor: T.border, flexDirection:"column", gap:10, alignItems:"center" }}>
+          <button onClick={() => { setView("home"); setSelectedMood(null); }} style={{ ...S.logoBtn, gap:8 }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = "0.7"; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}>
+            <span style={{ fontSize:40, lineHeight:1, color:"#E8637A" }}>◉</span>
+            <span style={{ fontFamily:"'Playfair Display SC','Playfair Display',Georgia,serif", fontSize:48, fontWeight:900, color:T.text, letterSpacing:"3px" }}>What To Flick</span>
+          </button>
+          <nav style={{ ...S.nav, width:"100%", justifyContent:"center" }}>
+            <button onClick={() => setDark(!dark)} style={{ ...S.navBtn, color: T.sub, fontSize: 16 }} title="Toggle theme">{dark ? "◐" : "◑"}</button>
+            <button onClick={() => setView("browse")} style={{ ...S.navBtn, color: view === "browse" ? T.text : T.sub }}>Browse</button>
+            <button onClick={() => setView("rated")} style={{ ...S.navBtn, color: view === "rated" ? T.text : T.sub }}>
+              Rated{ratedCount > 0 && <span style={{ ...S.badge, background: "#7B8FA1" }}>{ratedCount}</span>}
+            </button>
+            <button onClick={() => setView("watchlist")} style={{ ...S.navBtn, color: view === "watchlist" ? T.text : T.sub }}>
+              Later{watchlist.length > 0 && <span style={S.badge}>{watchlist.length}</span>}
+            </button>
+            <button onClick={() => setView("stats")} style={{ ...S.navBtn, color: view === "stats" ? T.text : T.sub }}>Stats</button>
+          </nav>
+        </header>
+
+        {/* HOME */}
+        {view === "home" && (
+          <div style={{ animation: "fadeIn 0.4s ease" }}>
+            <div style={S.hero}>
+              <h1 style={{ fontFamily:"'Playfair Display',Georgia,serif", fontSize:36, fontWeight:400, lineHeight:1.2, letterSpacing:"-0.5px", color:dark?"#F0F0F0":"#1A1A1A", fontStyle:"italic" }}>What are you<br/>in the mood for?</h1>
+              {tasteProfile.length > 0 && <p style={S.tasteHint}>You tend to enjoy: {tasteProfile.join(", ")}</p>}
+            </div>
+            <div style={S.moodGrid}>
+              {MOODS.map((mood, i) => (
+                <button key={mood.id} onClick={() => selectMood(mood.id)} style={{
+                  ...S.moodBtn, animation: `fadeUp 0.4s ease ${i * 0.04}s both`, borderColor: mood.color + "30",
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = mood.color; e.currentTarget.style.background = mood.color + "08"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = mood.color + "30"; e.currentTarget.style.background = "transparent"; }}
+                >
+                  <span style={{ ...S.moodIcon, color: mood.color }}>{mood.icon}</span>
+                  <span style={S.moodLabel}>{mood.label}</span>
+                </button>
+              ))}
+            </div>
+            <button onClick={handleSurprise} style={{ ...S.surpriseBtn, background: T.hover, borderColor: T.border, color: T.sub }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "#444"; e.currentTarget.style.color = "#CCC"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "#2A2A2E"; e.currentTarget.style.color = "#999"; }}
+            ><span style={{ fontSize: 16 }}>✦</span> Surprise me</button>
+            <p style={S.statsText}>{ratedCount > 0 ? `${ratedCount} rated · ${DB.length - ratedCount} to discover` : `${DB.length} titles · rate what you've seen to improve picks`}</p>
+          </div>
+        )}
+
+        {/* RESULTS */}
+        {view === "results" && (
+          <div style={{ animation: "fadeIn 0.3s ease" }}>
+            <div style={S.resultsHeader}>
+              <div>
+                <button onClick={() => { setView("home"); setSelectedMood(null); }} style={S.backBtn}>← Back</button>
+                <h2 style={S.resultsTitle}>
+                  {selectedMood ? `${MOOD_MAP[selectedMood]?.icon} ${MOOD_MAP[selectedMood]?.label}` : "✦ Surprise picks"}
+                </h2>
+                <p style={S.resultsSub}>{results.length === 0 ? "You've rated everything here — try another mood" : "Rate to swap in new picks"}</p>
+              </div>
+              <button onClick={refreshResults} style={S.refreshBtn}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "#444"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "#2A2A2E"; }}
+              >↻ Refresh</button>
+            </div>
+            <TypeToggle value={resultTypeFilter} onChange={changeResultTypeFilter} style={{ marginBottom: 14 }} />
+            <div style={S.list}>
+              {results.map((movie, i) => (
+                <MovieCard theme={T} key={`${movie.id}-${refreshKey}`} movie={movie} rating={ratings[movie.id]}
+                  onRate={handleRateInResults} onWatchlist={handleWatchlist}
+                  isOnWatchlist={watchlist.includes(movie.id)} isExiting={exitingIds.has(movie.id)}
+                  style={{
+                    animation: exitingIds.has(movie.id) ? undefined
+                      : animateIn ? `fadeUp 0.35s ease ${i * 0.05}s both` : `slideIn 0.3s ease both`,
+                    opacity: animateIn || exitingIds.has(movie.id) ? undefined : 0,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* BROWSE */}
+        {view === "browse" && (
+          <div style={{ animation: "fadeIn 0.3s ease" }}>
+            <div style={S.browseHead}>
+              <h2 style={S.browseTitle}>Browse & Rate</h2>
+              <p style={S.browseSub}>Rate titles to teach the app your taste</p>
+            </div>
+            <div style={S.browseCtrl}>
+              <input type="text" placeholder="Search titles, tags, moods..." value={browseSearch}
+                onChange={e => setBrowseSearch(e.target.value)} style={{ ...S.searchInput, background: T.card, borderColor: T.border, color: T.text }} />
+              <TypeToggle value={browseFilter} onChange={setBrowseFilter} />
+            </div>
+            <MoodTagStrip value={browseMoodTag} onChange={toggleMoodTag(setBrowseMoodTag)} />
+            <div style={{ ...S.browseCount, color: T.dim }}>{filteredBrowse.length} titles</div>
+            <div style={S.list}>
+              {filteredBrowse.map((movie, i) => (
+                <MovieCard theme={T} key={movie.id} movie={movie} rating={ratings[movie.id]}
+                  onRate={handleRate} onWatchlist={handleWatchlist}
+                  isOnWatchlist={watchlist.includes(movie.id)}
+                  style={{ animation: `fadeUp 0.25s ease ${Math.min(i, 12) * 0.025}s both` }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* RATED */}
+        {view === "rated" && (() => {
+          const ratedEntries = Object.entries(ratings).map(([id,v]) => ({movie: DB.find(m=>m.id===+id), rating: v})).filter(x=>x.movie);
+          const likeCount = ratedEntries.filter(x=>x.rating==="like").length;
+          const neutralCount = ratedEntries.filter(x=>x.rating==="neutral").length;
+          const dislikeCount = ratedEntries.filter(x=>x.rating==="dislike").length;
+          const filtered = ratedEntries.filter(x => (ratedFilter==="all"||x.rating===ratedFilter) && (ratedType==="all"||x.movie.type===ratedType) && matchMoodSet(x.movie.moods, ratedMoodTag));
+          return (
+            <div style={{ animation: "fadeIn 0.3s ease" }}>
+              <div style={S.browseHead}>
+                <h2 style={S.browseTitle}>Your Ratings</h2>
+                <p style={S.browseSub}>{ratedCount === 0 ? "Nothing rated yet — pick a mood and start rating" : "Tap a rating to change or remove it"}</p>
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+                {[["all","All",null,ratedCount],["like","Liked","#55A38B",likeCount],["neutral","Seen","#888",neutralCount],["dislike","Disliked","#E8637A",dislikeCount]].map(([v,l,clr,ct]) =>
+                  <button key={v} onClick={() => setRatedFilter(v)} style={{
+                    ...S.filterBtn, border: "1px solid",
+                    borderColor: ratedFilter===v ? (clr||"#555") : "#1A1A1E",
+                    background: ratedFilter===v ? (clr ? clr+"15" : "#222") : "#111113",
+                    color: ratedFilter===v ? (clr||"#E8E8E8") : "#666",
+                  }}>{l} <span style={{marginLeft:3,opacity:.6}}>({ct})</span></button>
+                )}
+                <TypeToggle value={ratedType} onChange={setRatedType} />
+              </div>
+              <MoodTagStrip value={ratedMoodTag} onChange={toggleMoodTag(setRatedMoodTag)} />
+              <div style={{ ...S.browseCount, color: T.dim }}>{filtered.length} titles</div>
+              <div style={S.list}>
+                {filtered.map(({movie, rating: r}, i) => (
+                  <MovieCard theme={T} key={movie.id} movie={movie} rating={r}
+                    onRate={handleRate} onWatchlist={handleWatchlist}
+                    isOnWatchlist={watchlist.includes(movie.id)}
+                    style={{ animation: `fadeUp 0.25s ease ${Math.min(i, 12) * 0.025}s both` }} />
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* WATCHLIST */}
+        {view === "watchlist" && (() => {
+          const wlMovies = watchlist.map(id => DB.find(m => m.id === id)).filter(Boolean);
+          const filtWL = wlMovies.filter(m => (wlType==="all"||m.type===wlType) && matchMoodSet(m.moods, wlMoodTag));
+          return (
+          <div style={{ animation: "fadeIn 0.3s ease" }}>
+            <div style={S.browseHead}>
+              <h2 style={{ ...S.browseTitle, color: T.text }}>Watch Later</h2>
+              <p style={{ ...S.browseSub, color: T.sub }}>{watchlist.length === 0 ? "Tap ☆ on any title to save it here" : `${watchlist.length} saved`}</p>
+            </div>
+            <div style={{ display:"flex", gap:6, marginBottom:8 }}>
+              <TypeToggle value={wlType} onChange={setWlType} />
+            </div>
+            <MoodTagStrip value={wlMoodTag} onChange={toggleMoodTag(setWlMoodTag)} />
+            <div style={{ ...S.browseCount, color: T.dim }}>{filtWL.length} titles</div>
+            <div style={S.list}>
+              {filtWL.map((movie, i) => (
+                <MovieCard theme={T} key={movie.id} movie={movie} rating={ratings[movie.id]}
+                  onRate={handleRate} onWatchlist={handleWatchlist} isOnWatchlist={true}
+                  style={{ animation: `fadeUp 0.25s ease ${i * 0.04}s both` }} />
+              ))}
+            </div>
+          </div>);
+        })()}
+
+        {/* STATS */}
+        {view === "stats" && (() => {
+          const entries = Object.entries(ratings);
+          const liked = entries.filter(([,v]) => v === "like");
+          const disliked = entries.filter(([,v]) => v === "dislike");
+          const neutral = entries.filter(([,v]) => v === "neutral");
+          const total = entries.length;
+          const pct = (n) => total ? Math.round((n / total) * 100) : 0;
+
+          // Top tags from liked
+          const tagCount = {};
+          liked.forEach(([id]) => {
+            const m = DB.find(x => x.id === +id);
+            if (m) m.tags.forEach(t => { tagCount[t] = (tagCount[t] || 0) + 1; });
+          });
+          const topTags = Object.entries(tagCount).sort((a, b) => b[1] - a[1]).slice(0, 8);
+
+          // Mood breakdown
+          const moodLiked = {};
+          const moodDisliked = {};
+          MOODS.forEach(m => { moodLiked[m.id] = 0; moodDisliked[m.id] = 0; });
+          liked.forEach(([id]) => {
+            const m = DB.find(x => x.id === +id);
+            if (m) m.moods.forEach(mood => { moodLiked[mood] = (moodLiked[mood] || 0) + 1; });
+          });
+          disliked.forEach(([id]) => {
+            const m = DB.find(x => x.id === +id);
+            if (m) m.moods.forEach(mood => { moodDisliked[mood] = (moodDisliked[mood] || 0) + 1; });
+          });
+
+          // Decade breakdown
+          const decadeCount = {};
+          liked.forEach(([id]) => {
+            const m = DB.find(x => x.id === +id);
+            if (m) { const d = Math.floor(m.year / 10) * 10; decadeCount[d] = (decadeCount[d] || 0) + 1; }
+          });
+          const decades = Object.entries(decadeCount).sort((a, b) => +a[0] - +b[0]);
+          const maxDecade = Math.max(...decades.map(([, c]) => c), 1);
+
+          // Type split
+          const likedMovies = liked.filter(([id]) => DB.find(x => x.id === +id)?.type === "movie").length;
+          const likedSeries = liked.length - likedMovies;
+
+          const sBox = { background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "16px 18px", marginBottom: 10 };
+          const sLabel = { fontSize: 11, color: T.sub, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 10, fontWeight: 500 };
+          const sNum = { fontFamily: "'Playfair Display',serif", fontSize: 32, fontWeight: 600, color: T.text, lineHeight: 1 };
+
+          return (
+            <div style={{ animation: "fadeIn 0.3s ease" }}>
+              <div style={{ textAlign: "center", padding: "24px 0 20px" }}>
+                <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 26, fontWeight: 400, color: T.text }}>Your Stats</h2>
+                <p style={{ fontSize: 13, color: T.sub, marginTop: 6 }}>{total === 0 ? "Rate some titles to see your stats" : `Based on ${total} ratings`}</p>
+              </div>
+
+              {total > 0 && <>
+                {/* Overview row */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 10 }}>
+                  <div style={{ ...sBox, textAlign: "center" }}>
+                    <div style={{ ...sNum, color: "#55A38B" }}>{liked.length}</div>
+                    <div style={{ fontSize: 11, color: T.sub, marginTop: 4 }}>Liked</div>
+                  </div>
+                  <div style={{ ...sBox, textAlign: "center" }}>
+                    <div style={{ ...sNum, color: "#888" }}>{neutral.length}</div>
+                    <div style={{ fontSize: 11, color: T.sub, marginTop: 4 }}>Seen</div>
+                  </div>
+                  <div style={{ ...sBox, textAlign: "center" }}>
+                    <div style={{ ...sNum, color: "#E8637A" }}>{disliked.length}</div>
+                    <div style={{ fontSize: 11, color: T.sub, marginTop: 4 }}>Disliked</div>
+                  </div>
+                </div>
+
+                {/* Progress */}
+                <div style={sBox}>
+                  <div style={sLabel}>Collection Progress</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                    <span style={{ fontSize: 13, color: T.textSoft }}>{total} of {DB.length} titles rated</span>
+                    <span style={{ fontSize: 13, color: T.accent, fontWeight: 500 }}>{Math.round((total / DB.length) * 100)}%</span>
+                  </div>
+                  <div style={{ height: 6, background: T.pill, borderRadius: 3, overflow: "hidden" }}>
+                    <div style={{ height: "100%", borderRadius: 3, background: `linear-gradient(90deg, #55A38B ${pct(liked.length)}%, #888 ${pct(liked.length)}% ${pct(liked.length) + pct(neutral.length)}%, #E8637A ${pct(liked.length) + pct(neutral.length)}% 100%)`, width: `${Math.round((total / DB.length) * 100)}%`, transition: "width 0.5s" }} />
+                  </div>
+                </div>
+
+                {/* Type split */}
+                {liked.length > 0 && <div style={sBox}>
+                  <div style={sLabel}>What You Like</div>
+                  <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, color: T.textSoft }}>Films</span>
+                        <span style={{ fontSize: 12, color: T.accent }}>{likedMovies}</span>
+                      </div>
+                      <div style={{ height: 4, background: T.pill, borderRadius: 2 }}>
+                        <div style={{ height: "100%", borderRadius: 2, background: T.accent, width: `${liked.length ? (likedMovies / liked.length) * 100 : 0}%` }} />
+                      </div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, color: T.textSoft }}>Series</span>
+                        <span style={{ fontSize: 12, color: "#F5A623" }}>{likedSeries}</span>
+                      </div>
+                      <div style={{ height: 4, background: T.pill, borderRadius: 2 }}>
+                        <div style={{ height: "100%", borderRadius: 2, background: "#F5A623", width: `${liked.length ? (likedSeries / liked.length) * 100 : 0}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>}
+
+                {/* Mood affinity */}
+                {liked.length > 0 && <div style={sBox}>
+                  <div style={sLabel}>Mood Affinity</div>
+                  {MOODS.map(m => {
+                    const lk = moodLiked[m.id] || 0;
+                    const dk = moodDisliked[m.id] || 0;
+                    const maxM = Math.max(...Object.values(moodLiked), 1);
+                    if (lk === 0 && dk === 0) return null;
+                    return (
+                      <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                        <span style={{ width: 70, fontSize: 12, color: m.color, flexShrink: 0 }}>{m.icon} {m.label}</span>
+                        <div style={{ flex: 1, height: 8, background: T.pill, borderRadius: 4, overflow: "hidden", display: "flex" }}>
+                          <div style={{ height: "100%", background: m.color, width: `${(lk / maxM) * 100}%`, borderRadius: 4, transition: "width 0.4s" }} />
+                        </div>
+                        <span style={{ fontSize: 11, color: T.sub, width: 20, textAlign: "right" }}>{lk}</span>
+                      </div>
+                    );
+                  })}
+                </div>}
+
+                {/* Decade distribution */}
+                {decades.length > 0 && <div style={sBox}>
+                  <div style={sLabel}>Decades You Love</div>
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 80 }}>
+                    {decades.map(([d, c]) => (
+                      <div key={d} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                        <span style={{ fontSize: 10, color: T.accent, fontWeight: 500 }}>{c}</span>
+                        <div style={{ width: "100%", background: T.accent, borderRadius: 3, height: `${(c / maxDecade) * 60}px`, transition: "height 0.4s", minHeight: 4 }} />
+                        <span style={{ fontSize: 9, color: T.sub }}>{String(d).slice(2)}s</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>}
+
+                {/* Top tags */}
+                {topTags.length > 0 && <div style={sBox}>
+                  <div style={sLabel}>Your Favourite Tags</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {topTags.map(([tag, count], i) => (
+                      <span key={tag} style={{
+                        fontSize: 12, padding: "5px 12px", borderRadius: 20,
+                        background: i === 0 ? T.accent + "20" : T.pill,
+                        color: i === 0 ? T.accent : T.textSoft,
+                        border: `1px solid ${i === 0 ? T.accent + "40" : T.border}`,
+                      }}>{tag.replace(/-/g, " ")} <span style={{ opacity: 0.5 }}>×{count}</span></span>
+                    ))}
+                  </div>
+                </div>}
+              </>}
+            </div>
+          );
+        })()}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+const TH = {
+  dark: { bg:"#0C0C0E",card:"#111113",border:"#1A1A1E",text:"#E8E8E8",textSoft:"#C8C8C8",sub:"#555",dim:"#444",pill:"#1A1A1E",pillText:"#777",input:"#111113",hover:"#141416",accent:"#55A38B" },
+  light: { bg:"#F5F3EE",card:"#FFFFFF",border:"#E2DFD8",text:"#1A1A1A",textSoft:"#333",sub:"#888",dim:"#AAA",pill:"#EBE8E2",pillText:"#666",input:"#FFFFFF",hover:"#F0EDE7",accent:"#3D8B72" },
+};
+
+const S = {
+  appWrap: { minHeight: "100vh", background: "#0C0C0E", color: "#E8E8E8", fontFamily: "'DM Sans', -apple-system, sans-serif" },
+  container: { maxWidth: 560, margin: "0 auto", padding: "0 20px 60px" },
+  header: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 0", borderBottom: "1px solid #1A1A1E", marginBottom: 8 },
+  logoBtn: { background: "none", border: "none", padding: 0, display: "flex", alignItems: "baseline" },
+  logoText: { fontFamily: "'Playfair Display', Georgia, serif", fontSize: 17, fontWeight: 500, color: "#E8E8E8", letterSpacing: "-0.3px" },
+  nav: { display: "flex", gap: 4, alignItems: "center" },
+  navBtn: { background: "none", border: "none", fontSize: 13, fontWeight: 400, padding: "6px 12px", borderRadius: 6, transition: "color 0.2s", display: "flex", alignItems: "center", gap: 6 },
+  badge: { background: "#55A38B", color: "#0C0C0E", fontSize: 10, fontWeight: 600, padding: "1px 6px", borderRadius: 10 },
+  hero: { textAlign: "center", padding: "48px 0 40px" },
+  heroTitle: { fontFamily: "'Playfair Display', Georgia, serif", fontSize: 36, fontWeight: 400, lineHeight: 1.2, letterSpacing: "-0.5px", color: "#F0F0F0" },
+  tasteHint: { fontSize: 13, color: "#666", marginTop: 16, fontStyle: "italic" },
+  moodGrid: { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 24 },
+  moodBtn: { display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", background: "transparent", border: "1px solid", borderRadius: 10, transition: "all 0.25s ease", textAlign: "left" },
+  moodIcon: { fontSize: 20, width: 28, textAlign: "center", flexShrink: 0 },
+  moodLabel: { fontSize: 14, fontWeight: 400, color: "#C8C8C8", letterSpacing: "0.2px" },
+  surpriseBtn: { display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "16px", background: "#141416", border: "1px solid #2A2A2E", borderRadius: 10, color: "#999", fontSize: 14, fontWeight: 400, transition: "all 0.25s ease", marginBottom: 32 },
+  statsText: { textAlign: "center", fontSize: 12, color: "#444" },
+  resultsHeader: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "24px 0 16px" },
+  backBtn: { background: "none", border: "none", color: "#666", fontSize: 13, padding: "4px 0", marginBottom: 8, display: "block" },
+  resultsTitle: { fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 400, color: "#F0F0F0", letterSpacing: "-0.3px" },
+  resultsSub: { fontSize: 13, color: "#555", marginTop: 6 },
+  refreshBtn: { background: "#141416", border: "1px solid #2A2A2E", color: "#888", fontSize: 13, padding: "8px 14px", borderRadius: 8, marginTop: 30, whiteSpace: "nowrap", transition: "all 0.2s" },
+  list: { display: "flex", flexDirection: "column", gap: 6 },
+  card: { display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", background: "#111113", borderRadius: 10, border: "1px solid #1A1A1E", transition: "all 0.2s" },
+  poster: { width: 42, height: 42, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: "#0C0C0E", borderRadius: 8, border: "1px solid" },
+  info: { flex: 1, minWidth: 0 },
+  title: { fontSize: 14, fontWeight: 500, color: "#E0E0E0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+  meta: { fontSize: 12, color: "#555", marginTop: 2 },
+  tags: { display: "flex", gap: 4, marginTop: 5, flexWrap: "wrap" },
+  tagPill: { fontSize: 10, fontWeight: 400, padding: "2px 7px", borderRadius: 4, background: "#1A1A1E", color: "#777", letterSpacing: "0.2px" },
+  actions: { display: "flex", flexDirection: "column", gap: 1, flexShrink: 0 },
+  rBtn: { width: 30, height: 26, display: "flex", alignItems: "center", justifyContent: "center", border: "none", borderRadius: 5, fontSize: 12, fontWeight: 600, transition: "all 0.15s" },
+  browseHead: { padding: "24px 0 20px" },
+  browseTitle: { fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 400, color: "#F0F0F0", letterSpacing: "-0.3px" },
+  browseSub: { fontSize: 13, color: "#555", marginTop: 6 },
+  browseCtrl: { display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" },
+  searchInput: { flex: 1, minWidth: 180, padding: "10px 14px", background: "#111113", border: "1px solid #1A1A1E", borderRadius: 8, color: "#E8E8E8", fontSize: 13, fontFamily: "inherit" },
+  filterBtns: { display: "flex", gap: 2, background: "#111113", borderRadius: 8, padding: 2, border: "1px solid #1A1A1E" },
+  filterBtn: { padding: "8px 14px", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 500, transition: "all 0.2s" },
+  browseCount: { fontSize: 12, color: "#444", marginBottom: 12 },
+};

@@ -38,17 +38,22 @@ function scoreAndPick(candidates, tagScores, ratings, count) {
   return scored.slice(0, count);
 }
 
-function getRecommendations(mood, ratings, typeFilter, count = 4) {
+function getRecommendations(mood, ratings, typeFilter, startYear = 1900, endYear = 2030, count = 4) {
   const tagScores = buildTasteScores(ratings);
   const seen = new Set(Object.keys(ratings).map(Number));
-  let candidates = DB.filter(m => m.moods.includes(mood) && !seen.has(m.id));
+  let candidates = DB.filter(m =>
+    m.moods.includes(mood) &&
+    !seen.has(m.id) &&
+    m.year >= startYear &&
+    m.year <= endYear
+  );
   if (typeFilter !== "all") candidates = candidates.filter(m => m.type === typeFilter);
   return scoreAndPick(candidates, tagScores, ratings, count);
 }
 
-function getSurpriseRecommendations(ratings, typeFilter, count = 4) {
+function getSurpriseRecommendations(ratings, typeFilter, startYear = 1900, endYear = 2030, count = 4) {
   const tagScores = buildTasteScores(ratings);
-  let candidates = [...DB];
+  let candidates = DB.filter(m => m.year >= startYear && m.year <= endYear);
   if (typeFilter !== "all") candidates = candidates.filter(m => m.type === typeFilter);
   if (Object.keys(ratings).length === 0) {
     return candidates.sort(() => Math.random() - 0.5).slice(0, count);
@@ -56,13 +61,14 @@ function getSurpriseRecommendations(ratings, typeFilter, count = 4) {
   return scoreAndPick(candidates, tagScores, ratings, count);
 }
 
-function getOneReplacement(mood, ratings, excludeIds, typeFilter) {
+function getOneReplacement(mood, ratings, excludeIds, typeFilter, startYear = 1900, endYear = 2030) {
   const tagScores = buildTasteScores(ratings);
   const seen = new Set(Object.keys(ratings).map(Number));
   const exclude = new Set([...seen, ...excludeIds]);
   let candidates = mood
     ? DB.filter(m => m.moods.includes(mood) && !exclude.has(m.id))
     : DB.filter(m => !exclude.has(m.id));
+  candidates = candidates.filter(m => m.year >= startYear && m.year <= endYear);
   if (typeFilter !== "all") candidates = candidates.filter(m => m.type === typeFilter);
   if (candidates.length === 0) return null;
   return scoreAndPick(candidates, tagScores, ratings, 1)[0] || null;
@@ -174,6 +180,9 @@ export default function App() {
   // --- NEW FEATURES STATE ---
   const [blacklistedMoods, setBlacklistedMoods] = useState(new Set());
   const [selectedDecade, setSelectedDecade] = useState("all");
+  const [startYear, setStartYear] = useState(1900);
+  const [endYear, setEndYear] = useState(2030);
+  const [isDraggingSlider, setIsDraggingSlider] = useState(false);
 
   const toggleMoodBlacklist = (moodId, e) => {
     if (e.altKey || e.type === "contextmenu") {
@@ -218,6 +227,17 @@ export default function App() {
 
   useEffect(() => { saveR(ratings); }, [ratings]);
   useEffect(() => { saveW(watchlist); }, [watchlist]);
+  useEffect(() => {
+    if (view === "results" && !isDraggingSlider) {
+      const timer = setTimeout(() => {
+        const recs = selectedMood
+          ? getRecommendations(selectedMood, ratings, resultTypeFilter, startYear, endYear)
+          : getSurpriseRecommendations(ratings, resultTypeFilter, startYear, endYear);
+        setResults(recs);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [startYear, endYear, view, selectedMood, resultTypeFilter, isDraggingSlider]);
 
   // Rate-and-replace in results
   const handleRateInResults = useCallback((id, value) => {
@@ -227,14 +247,14 @@ export default function App() {
       setResults(prev => {
         const currentIds = prev.map(m => m.id);
         const updatedRatings = { ...ratings, [id]: value };
-        const replacement = getOneReplacement(selectedMood, updatedRatings, currentIds, resultTypeFilter);
+        const replacement = getOneReplacement(selectedMood, updatedRatings, currentIds, resultTypeFilter, startYear, endYear);
         const next = prev.filter(m => m.id !== id);
         if (replacement) next.push(replacement);
         return next;
       });
       setExitingIds(prev => { const n = new Set(prev); n.delete(id); return n; });
     }, 300);
-  }, [ratings, selectedMood, resultTypeFilter]);
+  }, [ratings, selectedMood, resultTypeFilter, startYear, endYear]);
 
   // Toggle rate in browse/watchlist
   const handleRate = useCallback((id, value) => {
@@ -252,14 +272,14 @@ export default function App() {
 
   const selectMood = (moodId) => {
     setSelectedMood(moodId);
-    setResults(getRecommendations(moodId, ratings, resultTypeFilter));
+    setResults(getRecommendations(moodId, ratings, resultTypeFilter, startYear, endYear));
     setAnimateIn(false);
     setTimeout(() => { setView("results"); setAnimateIn(true); }, 50);
   };
 
   const handleSurprise = () => {
     setSelectedMood(null);
-    setResults(getSurpriseRecommendations(ratings, resultTypeFilter));
+    setResults(getSurpriseRecommendations(ratings, resultTypeFilter, startYear, endYear));
     setAnimateIn(false);
     setTimeout(() => { setView("results"); setAnimateIn(true); }, 50);
   };
@@ -271,8 +291,8 @@ export default function App() {
     setAnimateIn(false);
     setTimeout(() => {
       const recs = selectedMood
-        ? getRecommendations(selectedMood, ratings, resultTypeFilter)
-        : getSurpriseRecommendations(ratings, resultTypeFilter);
+        ? getRecommendations(selectedMood, ratings, resultTypeFilter, startYear, endYear)
+        : getSurpriseRecommendations(ratings, resultTypeFilter, startYear, endYear);
       setResults([...recs]);
       setRefreshKey(k => k + 1);
       setTimeout(() => setAnimateIn(true), 50);
@@ -283,8 +303,8 @@ export default function App() {
   const changeResultTypeFilter = (f) => {
     setResultTypeFilter(f);
     const recs = selectedMood
-      ? getRecommendations(selectedMood, ratings, f)
-      : getSurpriseRecommendations(ratings, f);
+      ? getRecommendations(selectedMood, ratings, f, startYear, endYear)
+      : getSurpriseRecommendations(ratings, f, startYear, endYear);
     setResults(recs);
     setAnimateIn(false);
     setTimeout(() => setAnimateIn(true), 50);
@@ -326,6 +346,123 @@ export default function App() {
       ))}
     </div>
   );
+
+  const YearRangeSlider = () => {
+    const accent = "#E8637A"; // Logo color
+    const min = 1900;
+    const max = 2030;
+
+    // Calculate percentages for the track gradient
+    const fromPct = ((startYear - min) / (max - min)) * 100;
+    const toPct = ((endYear - min) / (max - min)) * 100;
+
+    const handleTrackClick = (e) => {
+      if (e.target.className.includes("dual-range-input")) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      const clickedYear = Math.round(min + pct * (max - min));
+
+      const distFrom = Math.abs(clickedYear - startYear);
+      const distTo = Math.abs(clickedYear - endYear);
+
+      if (distFrom < distTo) {
+        setStartYear(Math.min(clickedYear, endYear - 1));
+      } else {
+        setEndYear(Math.max(clickedYear, startYear + 1));
+      }
+    };
+
+    return (
+      <div style={{ marginBottom: 18, background: T.card, padding: "12px 14px", borderRadius: 10, border: `1px solid ${T.border}` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+          <span style={{ fontSize: 11, color: T.dim, textTransform: "uppercase", letterSpacing: "1px" }}>⌛ Era: {startYear} — {endYear}</span>
+          <button onClick={() => { setStartYear(min); setEndYear(max); }} style={{ background: "none", border: "none", color: accent, fontSize: 10, cursor: "pointer" }}>Reset</button>
+        </div>
+
+        <div
+          onMouseDown={handleTrackClick}
+          style={{ position: "relative", height: 32, display: "flex", alignItems: "center", cursor: "pointer" }}
+        >
+          {/* Custom Track */}
+          <div style={{
+            position: "absolute",
+            left: 0, right: 0,
+            height: 4,
+            borderRadius: 2,
+            background: `linear-gradient(to right, 
+              ${T.border} ${fromPct}%, 
+              ${accent} ${fromPct}%, 
+              ${accent} ${toPct}%, 
+              ${T.border} ${toPct}%
+            )`,
+            pointerEvents: "none"
+          }} />
+
+          {/* Overlapping Range Inputs */}
+          <input
+            type="range" min={min} max={max} step="1"
+            value={startYear}
+            onMouseDown={() => setIsDraggingSlider(true)}
+            onMouseUp={() => setIsDraggingSlider(false)}
+            onTouchStart={() => setIsDraggingSlider(true)}
+            onTouchEnd={() => setIsDraggingSlider(false)}
+            onChange={e => {
+              const val = Math.min(parseInt(e.target.value), endYear - 1);
+              setStartYear(val);
+            }}
+            style={{
+              position: "absolute", width: "100%", appearance: "none", background: "none", pointerEvents: "none",
+              zIndex: (startYear > (min + (max - min) * 0.75)) ? 10 : 9
+            }}
+            className="dual-range-input"
+          />
+          <input
+            type="range" min={min} max={max} step="1"
+            value={endYear}
+            onMouseDown={() => setIsDraggingSlider(true)}
+            onMouseUp={() => setIsDraggingSlider(false)}
+            onTouchStart={() => setIsDraggingSlider(true)}
+            onTouchEnd={() => setIsDraggingSlider(false)}
+            onChange={e => {
+              const val = Math.max(parseInt(e.target.value), startYear + 1);
+              setEndYear(val);
+            }}
+            style={{
+              position: "absolute", width: "100%", appearance: "none", background: "none", pointerEvents: "none",
+              zIndex: (endYear < (min + (max - min) * 0.25)) ? 10 : 8
+            }}
+            className="dual-range-input"
+          />
+
+          {/* Inline CSS for range thumb pointer-events */}
+          <style>{`
+            .dual-range-input::-webkit-slider-thumb {
+              pointer-events: auto;
+              cursor: grab;
+              appearance: none;
+              width: 20px;
+              height: 20px;
+              border-radius: 50%;
+              background: #fff;
+              border: 3px solid ${accent};
+              box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            }
+            .dual-range-input::-webkit-slider-thumb:active { cursor: grabbing; }
+            .dual-range-input::-moz-range-thumb {
+              pointer-events: auto;
+              cursor: grab;
+              width: 16px;
+              height: 16px;
+              border-radius: 50%;
+              background: #fff;
+              border: 3px solid ${accent};
+              box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            }
+          `}</style>
+        </div>
+      </div>
+    );
+  };
 
   const MoodTagStrip = ({ value, onChange }) => (
     <div style={{ display: "flex", gap: 4, overflowX: "auto", paddingBottom: 6, marginBottom: 6 }}>
@@ -381,13 +518,25 @@ export default function App() {
       <div style={S.container}>
         {/* HEADER */}
         <header style={{ ...S.header, borderColor: T.border, flexDirection: "column", gap: 10, alignItems: "center" }}>
-          <button onClick={() => { setView("home"); setSelectedMood(null); }} style={{ ...S.logoBtn, gap: 8 }}
+          <button onClick={() => { setView("home"); setSelectedMood(null); }} style={{ ...S.logoBtn, flexDirection: "column", alignItems: "center", gap: 2 }}
             onMouseEnter={e => { e.currentTarget.style.opacity = "0.7"; }}
             onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}>
-            <span style={{ fontSize: 40, lineHeight: 1, color: "#E8637A" }}>◉</span>
-            <span style={{ fontFamily: "'Playfair Display SC','Playfair Display',Georgia,serif", fontSize: 48, fontWeight: 900, color: T.text, letterSpacing: "3px" }}>What To Flick</span>
+            <span style={{
+              fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif",
+              fontSize: 42,
+              fontWeight: 900,
+              color: "#E8637A",
+              letterSpacing: "2px",
+              textTransform: "uppercase",
+              textShadow: "3px 3px 0 #1A1A1A, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff",
+              WebkitTextStroke: "1px #fff"
+            }}>WTF</span>
+            <span style={{ fontSize: 11, color: T.sub, fontWeight: 400, letterSpacing: "0.5px" }}>(What to Flick)</span>
           </button>
           <nav style={{ ...S.nav, width: "100%", justifyContent: "center" }}>
+            <button onClick={() => { setView("home"); setSelectedMood(null); }} style={{ ...S.navBtn, color: view === "home" ? T.text : T.sub }} title="Home">
+              <MiniIcon name="home" color={view === "home" ? T.text : T.sub} />
+            </button>
             <button onClick={() => setDark(!dark)} style={{ ...S.navBtn, color: T.sub, fontSize: 16 }} title="Toggle theme">{dark ? "◐" : "◑"}</button>
             <button onClick={() => setView("browse")} style={{ ...S.navBtn, color: view === "browse" ? T.text : T.sub }}>Browse</button>
             <button onClick={() => setView("rated")} style={{ ...S.navBtn, color: view === "rated" ? T.text : T.sub }}>
@@ -404,7 +553,7 @@ export default function App() {
         {view === "home" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={S.hero}>
-              <h1 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 36, fontWeight: 400, lineHeight: 1.2, letterSpacing: "-0.5px", color: dark ? "#F0F0F0" : "#1A1A1A", fontStyle: "italic" }}>What are you<br />in the mood for?</h1>
+              <h1 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 26, fontWeight: 400, lineHeight: 1.3, letterSpacing: "0px", color: T.sub, fontStyle: "italic" }}>What are you in the mood for?</h1>
               {tasteProfile.length > 0 && <p style={S.tasteHint}>You tend to enjoy: {tasteProfile.join(", ")}</p>}
             </div>
             <div style={S.moodGrid}>
@@ -416,7 +565,7 @@ export default function App() {
                   onMouseLeave={e => { e.currentTarget.style.borderColor = mood.color + "30"; e.currentTarget.style.background = "transparent"; }}
                 >
                   <span style={{ ...S.moodIcon, color: mood.color }}>{mood.icon}</span>
-                  <span style={S.moodLabel}>{mood.label}</span>
+                  <span style={{ ...S.moodLabel, color: dark ? T.text : "#1A1A1A", textShadow: dark ? "none" : "0 0 8px #fff, 0 0 12px #fff" }}>{mood.label}</span>
                 </button>
               ))}
             </div>
@@ -434,7 +583,7 @@ export default function App() {
             <div style={S.resultsHeader}>
               <div>
                 <button onClick={() => { setView("home"); setSelectedMood(null); }} style={S.backBtn}>← Back</button>
-                <h2 style={S.resultsTitle}>
+                <h2 style={{ ...S.resultsTitle, color: T.text }}>
                   {selectedMood ? `${MOOD_MAP[selectedMood]?.icon} ${MOOD_MAP[selectedMood]?.label}` : "✦ Surprise picks"}
                 </h2>
                 <p style={S.resultsSub}>{results.length === 0 ? "You've rated everything here — try another mood" : "Rate to swap in new picks"}</p>
@@ -444,7 +593,10 @@ export default function App() {
                 onMouseLeave={e => { e.currentTarget.style.borderColor = "#2A2A2E"; }}
               >↻ Refresh</button>
             </div>
-            <TypeToggle value={resultTypeFilter} onChange={changeResultTypeFilter} style={{ marginBottom: 14 }} />
+            <div style={{ display: "flex", gap: 8, marginBottom: 14, alignItems: "center" }}>
+              <TypeToggle value={resultTypeFilter} onChange={changeResultTypeFilter} style={{ flex: 1 }} />
+            </div>
+            <YearRangeSlider />
             <div style={S.list}>
               {results.map((movie, i) => (
                 <MovieCard theme={T} key={`${movie.id}-${refreshKey}`} movie={movie} rating={ratings[movie.id]}
@@ -744,7 +896,7 @@ const S = {
   statsText: { textAlign: "center", fontSize: 12, color: "#444" },
   resultsHeader: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "24px 0 16px" },
   backBtn: { background: "none", border: "none", color: "#666", fontSize: 13, padding: "4px 0", marginBottom: 8, display: "block" },
-  resultsTitle: { fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 400, color: "#F0F0F0", letterSpacing: "-0.3px" },
+  resultsTitle: { fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 400, letterSpacing: "-0.3px" },
   resultsSub: { fontSize: 13, color: "#555", marginTop: 6 },
   refreshBtn: { background: "#141416", border: "1px solid #2A2A2E", color: "#888", fontSize: 13, padding: "8px 14px", borderRadius: 8, marginTop: 30, whiteSpace: "nowrap", transition: "all 0.2s" },
   list: { display: "flex", flexDirection: "column", gap: 6 },
